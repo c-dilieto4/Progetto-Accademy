@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Triage Assistant</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { display: flex; gap: 20px; max-width: 1200px; margin: auto; }
+        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex: 1; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #333; }
+        .data-row { margin-bottom: 15px; font-size: 1.1em; }
+        .label { font-weight: bold; color: #555; }
+        
+        .video-container { width: 100%; height: 350px; background: #000; border-radius: 8px; overflow: hidden; }
+        
+        /* Stile Pulsanti */
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        button { flex: 1; padding: 12px; font-size: 1em; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; color: white;}
+        .btn-acquisisci { background-color: #28a745; }
+        .btn-acquisisci:hover { background-color: #218838; }
+        .btn-reset { background-color: #dc3545; }
+        .btn-reset:hover { background-color: #c82333; }
+        .btn-disabled { background-color: #6c757d; cursor: not-allowed; }
+    </style>
+    
+    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+    <df-messenger
+    intent="WELCOME"
+    chat-title="Triage"
+    agent-id="52b7a76b-388d-40c7-8bcb-bd945bf45246"
+    language-code="it"
+    ></df-messenger>
+</head>
+<body>
+
+    <h1 style="text-align: center; color: #333;">Pannello di Controllo - Triage</h1>
+
+    <div class="container">
+        <div class="card">
+            <h2>Visione Computerizzata</h2>
+            <div class="video-container">
+                <img id="videoLive" src="/video_feed" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            
+            <div class="btn-group">
+                <button id="btnAcquisisci" class="btn-acquisisci" onclick="scattaFoto()">📸 Acquisisci Volto</button>
+                <button id="btnSalva" class="btn-acquisisci" style="background-color: #007bff;" onclick="salvaPaziente()">💾 Salva nel DB</button>
+                <button id="btnReset" class="btn-reset" onclick="resetPaziente()">🔄 Nuovo Paziente</button>
+            </div>
+
+            <div class="data-row" style="margin-top: 15px; font-size: 0.9em; color: #666;">
+                Confidenza IA: <span id="val_confidenza_cam">0</span>%
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Dati Paziente</h2>
+            <div class="data-row"><span class="label">Nome:</span> <span id="df_nome">-</span></div>
+            <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
+            <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span></div>
+            <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="color: #d9534f; font-weight: bold;">-</span></div>
+        </div>
+    </div>
+
+    <script>
+        const btnAcquisisci = document.getElementById('btnAcquisisci');
+
+        function scattaFoto() {
+            btnAcquisisci.disabled = true;
+            btnAcquisisci.classList.add('btn-disabled');
+            btnAcquisisci.innerText = "⏳ Acquisizione e Ritaglio...";
+
+            fetch('/api/acquisisci', { method: 'POST' })
+                .then(() => {
+                    btnAcquisisci.innerText = "✅ Volto Acquisito";
+                });
+        }
+
+        function resetPaziente() {
+            btnAcquisisci.disabled = false;
+            btnAcquisisci.classList.remove('btn-disabled');
+            btnAcquisisci.innerText = "📸 Acquisisci Volto";
+    
+            // Nuove righe per il reset del tasto Salva
+            const btnSalva = document.getElementById('btnSalva');
+            btnSalva.disabled = false;
+            btnSalva.innerText = "💾 Salva nel DB";
+            btnSalva.style.backgroundColor = "#007bff";
+            
+            fetch('/api/reset', { method: 'POST' });
+        }
+
+        // Formatta la data dal formato Dialogflow al formato Italiano (GG/MM/AAAA)
+        function formattaData(dataString) {
+            if (!dataString || dataString === "-") return "-";
+            try {
+                // Estrae solo la parte della data ignorando l'orario se presente
+                const dataObj = new Date(dataString);
+                if (!isNaN(dataObj)) {
+                    return dataObj.toLocaleDateString('it-IT');
+                }
+            } catch (e) {
+                console.warn("Errore formattazione data", e);
+            }
+            return dataString; // Restituisce il valore grezzo se non riesce a formattare
+        }
+
+        async function aggiornaDati() {
+            try {
+                const response = await fetch('/api/stato_triage', { cache: 'no-store' });
+                const data = await response.json();
+                
+                document.getElementById('df_nome').innerText = data.dialogflow.nome || "-";
+                // Applicazione della formattazione sulla data di nascita
+                document.getElementById('df_data_nascita').innerText = formattaData(data.dialogflow.data_nascita);
+                document.getElementById('df_sintomi').innerText = data.dialogflow.sintomi || "-";
+                
+                document.getElementById('val_dolore_cam').innerText = data.webcam.pain_level || "-";
+                document.getElementById('val_confidenza_cam').innerText = parseFloat(data.webcam.confidence).toFixed(1);
+            } catch (error) {
+                console.error("Errore connessione al server:", error);
+            }
+        }
+
+        setInterval(aggiornaDati, 1000);
+
+        async function salvaPaziente() {
+            const btnSalva = document.getElementById('btnSalva');
+            btnSalva.disabled = true;
+            btnSalva.innerText = "⏳ Salvataggio...";
+
+            try {
+                const response = await fetch('/api/salva_paziente', { method: 'POST' });
+                const data = await response.json();
+                
+                if (data.status === "ok") {
+                    alert(`Paziente salvato con successo! Codice assegnato: ${data.codice}`);
+                    btnSalva.innerText = "✅ Salvato";
+                    btnSalva.style.backgroundColor = "#28a745";
+                } else {
+                    alert(`Impossibile salvare: ${data.message}`);
+                    btnSalva.innerText = "💾 Salva nel DB";
+                    btnSalva.disabled = false;
+                }
+            } catch (error) {
+                console.error("Errore durante il salvataggio:", error);
+                alert("Errore di connessione al server.");
+                btnSalva.innerText = "💾 Salva nel DB";
+                btnSalva.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+0 Dolore Alto
+1 Dolore Medio
+2 Dolore Basso
