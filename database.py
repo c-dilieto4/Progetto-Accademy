@@ -61,3 +61,74 @@ def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore):
     except Exception as e:
         print(f"[ERRORE DB] {e}")
         return False, None, str(e)
+    
+    # =====================================================================
+# GESTIONE AUTENTICAZIONE UTENTI (Aggiungi in fondo a database.py)
+# =====================================================================
+
+def get_user(username):
+    """Recupera i dati di un utente basandosi sullo username"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute("SELECT username, nome_completo, email, pass FROM utenti WHERE username = %s;", (username,))
+        row = cur.fetchone()
+        cur.close()
+        conn.close()
+        
+        if row:
+            return {
+                'username': row[0],
+                'nome_completo': row[1],
+                'email': row[2],
+                'pass': row[3]
+            }
+        return None
+    except Exception as e:
+        print(f"[ERRORE DB GET_USER] {e}")
+        return None
+
+def user_exists(username):
+    """Verifica se uno username è già registrato"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute("SELECT username FROM utenti WHERE username = %s;", (username,))
+        exists = cur.fetchone() is not None
+        cur.close()
+        conn.close()
+        return exists
+    except Exception as e:
+        print(f"[ERRORE DB USER_EXISTS] {e}")
+        return False
+
+def email_exists(email):
+    """Verifica se un'email è già registrata"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute("SELECT email FROM utenti WHERE email = %s;", (email,))
+        exists = cur.fetchone() is not None
+        cur.close()
+        conn.close()
+        return exists
+    except Exception as e:
+        print(f"[ERRORE DB EMAIL_EXISTS] {e}")
+        return False
+
+def register_user(username, nome, email, hashed_password):
+    """Registra un nuovo utente nel database"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO utenti (username, nome_completo, email, pass) VALUES (%s, %s, %s, %s);",
+            (username, nome, email, hashed_password)
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"[ERRORE DB REGISTER_USER] {e}")
+        return False

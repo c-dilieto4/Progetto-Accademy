@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triage System - Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background: #f4f7f6; 
+            margin: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .login-container { 
+            background: white; 
+            border-radius: 10px; 
+            padding: 30px; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+            width: 100%;
+            max-width: 400px; 
+            box-sizing: border-box;
+        }
+        h2 { 
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 10px; 
+            color: #333; 
+            text-align: center;
+            margin-top: 0;
+        }
+        .input-row {
+            position: relative;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        .input-row i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .text {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            font-size: 1em;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+        }
+        .text:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 5px rgba(0,123,255,0.25);
+        }
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            margin-top: 20px;
+            transition: 0.2s;
+        }
+        .submit-btn:hover { background-color: #0056b3; }
+        
+        .switch-text {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.95em;
+            color: #555;
+        }
+        .link-btn {
+            background: none;
+            border: none;
+            color: #007bff;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0;
+            font-size: 1em;
+            text-decoration: underline;
+        }
+        
+        /* Box Messaggi di Errore/Successo Flassati da Flask */
+        .alert-box {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 0.95em;
+            text-align: center;
+        }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        
+        <div id="signInSection">
+            <h2>Effettua l'accesso</h2>
+            
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert-box alert-{{ 'error' if category == 'error' else 'success' }}">
+                            <i class="fa-solid {{ 'fa-triangle-exclamation' if category == 'error' else 'fa-circle-check' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form id="signInForm" method="POST" action="/login">
+                <div class="input-row">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" name="username" id="login_username" class="text" placeholder="Username">
+                </div>
+                
+                <div class="input-row">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" name="password" id="login_password" class="text" placeholder="Password">
+                </div>
+
+                <button type="submit" class="submit-btn">Login</button>
+            </form>
+            
+            <div class="switch-text">
+                Nuovo utente? <button type="button" id="toSignUp" class="link-btn">Registrati</button>
+            </div>
+        </div>
+
+        <div id="signUpSection" style="display: none;">
+            <h2>Crea un account</h2>
+            
+            <form id="signUpForm" method="POST" action="/signup">
+                <div class="input-row">
+                    <i class="fa-solid fa-id-card"></i>
+                    <input type="text" name="nome" id="reg_nome" class="text" placeholder="Nome completo">
+                </div>
+                
+                <div class="input-row">
+                    <i class="fa-solid fa-envelope"></i>
+                    <input type="email" name="email" id="reg_email" class="text" placeholder="Email">
+                </div>
+                
+                <div class="input-row">
+                    <i class="fa-solid fa-user"></i>
+                    <input type="text" name="username" id="reg_username" class="text" placeholder="Username">
+                </div>
+                
+                <div class="input-row">
+                    <i class="fa-solid fa-key"></i>
+                    <input type="password" name="password" id="reg_password" class="text" placeholder="Password">
+                </div>
+                
+                <div class="input-row">
+                    <i class="fa-solid fa-check-double"></i>
+                    <input type="password" name="conferma_password" id="reg_conferma_password" class="text" placeholder="Conferma Password">
+                </div>
+
+                <button type="submit" class="submit-btn" style="background-color: #28a745;">Registrati</button>
+            </form>
+            
+            <div class="switch-text">
+                Hai già un account? <button type="button" id="toSignIn" class="link-btn">Accedi</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const signInSection = document.getElementById("signInSection");
+            const signUpSection = document.getElementById("signUpSection");
+            const toSignUp = document.getElementById("toSignUp");
+            const toSignIn = document.getElementById("toSignIn");
+
+            // 1. Gestione Switch tra i due moduli (Logica pulita senza ricaricare la pagina)
+            toSignUp.addEventListener("click", () => {
+                signInSection.style.display = "none";
+                signUpSection.style.display = "block";
+            });
+            toSignIn.addEventListener("click", () => {
+                signUpSection.style.display = "none";
+                signInSection.style.display = "block";
+            });
+
+            // 2. Validazione lato client del Form di Acceso (Sign In)
+            const signInForm = document.getElementById("signInForm");
+            signInForm.addEventListener("submit", (event) => {
+                const username = signInForm.querySelector("#login_username");
+                const password = signInForm.querySelector("#login_password");
+
+                if (username.value.trim() === "") {
+                    alert("Devi inserire un username!");
+                    username.focus();
+                    event.preventDefault();
+                    return;
+                }
+                if (password.value.trim() === "") {
+                    alert("Devi inserire una password!");
+                    password.focus();
+                    event.preventDefault();
+                    return;
+                }
+            });
+
+            // 3. Validazione lato client del Form di Registrazione (Sign Up)
+            const signUpForm = document.getElementById("signUpForm");
+            signUpForm.addEventListener("submit", (event) => {
+                const nome = signUpForm.querySelector("#reg_nome");
+                const email = signUpForm.querySelector("#reg_email");
+                const username = signUpForm.querySelector("#reg_username");
+                const password = signUpForm.querySelector("#reg_password");
+                const conferma = signUpForm.querySelector("#reg_conferma_password");
+
+                if (nome.value.trim() === "") {
+                    alert("Devi inserire il tuo nome!");
+                    nome.focus();
+                    event.preventDefault();
+                    return;
+                }
+                
+                // Controllo regex per l'email speculare al tuo codice originale
+                const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\.[a-zA-Z]+$/;
+                if (email.value.trim() === "" || !email.value.match(emailRegex)) {
+                    alert("Devi inserire un'email valida!");
+                    email.focus();
+                    event.preventDefault();
+                    return;
+                }
+                if (username.value.trim() === "") {
+                    alert("Devi scegliere un username!");
+                    username.focus();
+                    event.preventDefault();
+                    return;
+                }
+                if (password.value.trim() === "") {
+                    alert("Devi scegliere una password!");
+                    password.focus();
+                    event.preventDefault();
+                    return;
+                }
+                if (password.value.trim() !== conferma.value.trim()) {
+                    alert("Le password non corrispondono!");
+                    conferma.value = "";
+                    conferma.focus();
+                    event.preventDefault();
+                    return;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
