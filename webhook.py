@@ -38,11 +38,6 @@ def process_dialogflow_webhook(req):
         if raw_data:
             globals.dati_paziente['data_nascita'] = str(raw_data)
 
-        # Estrai livello dolore
-        livello_dolore = parameters.get('livello_dolore')
-        if livello_dolore:
-            globals.dati_paziente['livello_dolore'] = str(livello_dolore)
-
         print(f"[INFO] Dati inseriti: {globals.dati_paziente}")
         return jsonify({
             "fulfillmentText": f"Grazie {globals.dati_paziente['nome']}! Ho registrato i tuoi dati."
@@ -65,10 +60,6 @@ def process_dialogflow_webhook(req):
         if sintomi_followup:
             globals.dati_paziente['sintomi'] = ", ".join([str(s) for s in sintomi_followup]) if isinstance(sintomi_followup, list) else str(sintomi_followup)
 
-        livello_followup = followup_params.get('livello_dolore')
-        if livello_followup:
-            globals.dati_paziente['livello_dolore'] = str(livello_followup)
-
         # Sovrascrivi con i nuovi valori se presenti in parameters
         raw_nome_nuovo = parameters.get('person') or parameters.get('Nome')
         if raw_nome_nuovo:
@@ -81,10 +72,6 @@ def process_dialogflow_webhook(req):
         raw_data_nuovo = parameters.get('date')
         if raw_data_nuovo:
             globals.dati_paziente['data_nascita'] = str(raw_data_nuovo)
-
-        livello_nuovo = parameters.get('livello_dolore')
-        if livello_nuovo:
-            globals.dati_paziente['livello_dolore'] = str(livello_nuovo)
 
         print(f"[INFO] Dati modificati: {globals.dati_paziente}")
         return jsonify({
@@ -108,7 +95,7 @@ def process_dialogflow_webhook(req):
         globals.captured_image_bytes = None
         globals.capture_requested = False
         globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
-        globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-"}
+        globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-"}
 
         return jsonify({
             "fulfillmentText": f"Ho annullato la registrazione di {nome}. Se hai bisogno di aiuto sono qui."
