@@ -85,32 +85,24 @@ def logout():
     return redirect(url_for('login'))
 
 
-# --- ROTTE APPLICAZIONE (PROTEGGE LA DASHBOARD) ---
+# --- ROTTE APPLICAZIONE (ACCESSIBILE A TUTTI) ---
 
 @app.route('/')
 def dashboard():
-    # SE NON SEI LOGGATO, VIENI REINDIRIZZATO AL LOGIN
-    if 'utente' not in session:
-        return redirect(url_for('login'))
+    # Ora la dashboard è libera, non c'è più il redirect forzato al login
     return render_template('index.html')
 
 @app.route('/video_feed')
 def video_feed():
-    if 'utente' not in session:
-        return "Non autorizzato", 401
     return Response(stream_to_browser(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/api/acquisisci', methods=['POST'])
 def acquisisci():
-    if 'utente' not in session:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     globals.capture_requested = True
     return jsonify({"status": "ok"})
 
 @app.route('/api/reset', methods=['POST'])
 def reset_triage():
-    if 'utente' not in session:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     globals.camera_active = True
     globals.captured_image_bytes = None
     globals.capture_requested = False
@@ -120,16 +112,12 @@ def reset_triage():
 
 @app.route('/api/stato_triage', methods=['GET'])
 def stato_triage():
-    if 'utente' not in session:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     response = jsonify({"webcam": globals.ultimo_dato_dolore, "dialogflow": globals.dati_paziente})
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
 @app.route('/api/salva_paziente', methods=['POST'])
 def salva_paziente():
-    if 'utente' not in session:
-        return jsonify({"status": "error", "message": "Unauthorized"}), 401
     nome = globals.dati_paziente.get('nome', '-')
     data_nascita = globals.dati_paziente.get('data_nascita', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
@@ -145,10 +133,21 @@ def salva_paziente():
     else:
         return jsonify({"status": "error", "message": risultato}), 500
 
-@app.route('/webhook', methods=['POST'])
-def dialogflow_webhook():
-    req = request.get_json(force=True)
-    return process_dialogflow_webhook(req)
+
+# --- ROTTA ARCHIVIO DATI (PROTETTA: SOLO UTENTI REGISTRATI) ---
+
+# Ricordati di aggiungere get_all_pazienti negli import in alto da database
+from database import salva_paziente_db, get_user, user_exists, email_exists, register_user, get_all_pazienti
+
+@app.route('/pazienti')
+def visualizza_pazienti():
+    # Solo gli utenti autenticati possono visualizzare lo storico dei dati
+    if 'utente' not in session:
+        flash("Devi effettuare l'accesso per poter visualizzare l'archivio dei pazienti.", "error")
+        return redirect(url_for('login'))
+    
+    pazienti = get_all_pazienti()
+    return render_template('pazienti.html', pazienti=pazienti)
 
 if __name__ == '__main__':
     print("\n--- AVVIO SERVER TRIAGE ---")

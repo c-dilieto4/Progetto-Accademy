@@ -34,7 +34,18 @@
 </head>
 <body>
 
-    <h1 style="text-align: center; color: #333;">Pannello di Controllo - Triage</h1>
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 20px auto; padding: 0 20px; box-sizing: border-box;">
+        <h1 style="color: #333; margin: 0; font-size: 1.8em;">Pannello di Controllo - Triage</h1>
+        <div>
+            {% if session.get('utente') %}
+                <span style="font-weight: bold; margin-right: 15px; color: #555;">👋 Medico: {{ session['nome'] }}</span>
+                <a href="/pazienti" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px; font-size: 0.9em;">📂 Vedi Archivio</a>
+                <a href="/logout" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9em;">🚪 Esci</a>
+            {% else %}
+                <a href="/login" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9em;">🔑 Accedi (Area Medici)</a>
+            {% endif %}
+        </div>
+    </div>
 
     <div class="container">
         <div class="card">

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Archivio Pazienti Triage</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .header-container { display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: auto; margin-bottom: 20px; }
+        .card-table { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 1200px; margin: auto; }
+        h2 { margin: 0; color: #333; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; text-align: left; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid #ddd; }
+        th { background-color: #007bff; color: white; font-weight: 600; }
+        tr:hover { background-color: #f1f3f5; }
+        
+        /* Badge Colori Triage */
+        .badge { padding: 5px 10px; border-radius: 4px; font-weight: bold; text-transform: uppercase; display: inline-block; font-size: 0.9em; }
+        .badge-rosso { background-color: #dc3545; color: white; }
+        .badge-arancione { background-color: #fd7e14; color: white; }
+        .badge-verde { background-color: #28a745; color: white; }
+        .badge-bianco { background-color: #fff; color: #333; border: 1px solid #ccc; }
+        
+        .btn-back { padding: 10px 15px; background-color: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; transition: 0.2s; }
+        .btn-back:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <h2>📂 Registro Storico Pazienti</h2>
+        <a href="/" class="btn-back">⬅ Torna alla Dashboard</a>
+    </div>
+
+    <div class="card-table">
+        {% if pazienti %}
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Paziente</th>
+                    <th>Data Nascita</th>
+                    <th>Sintomi Rilevati</th>
+                    <th>Livello Dolore (IA)</th>
+                    <th>Codice Assegnato</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in pazienti %}
+                <tr>
+                    <td>{{ p[0] }}</td>
+                    <td><strong>{{ p[1] }}</strong></td>
+                    <td>{{ p[2] }}</td>
+                    <td>{{ p[3] }}</td>
+                    <td>{{ p[4] }}</td>
+                    <td>
+                        {% if p[5] == 'ROSSO' %}
+                            <span class="badge badge-rosso">Rosso</span>
+                        {% elif p[5] == 'ARANCIONE' %}
+                            <span class="badge badge-arancione">Arancione</span>
+                        {% elif p[5] == 'VERDE' %}
+                            <span class="badge badge-verde">Verde</span>
+                        {% else %}
+                            <span class="badge badge-bianco">Bianco</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p style="text-align: center; color: #666; font-size: 1.1em; padding: 20px;">Nessun paziente registrato finora nel database.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>

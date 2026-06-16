@@ -142,3 +142,18 @@ def register_user(username, nome, email, hashed_password):
     except Exception as e:
         print(f"[ERRORE DB REGISTER_USER] {e}")
         return False
+
+def get_all_pazienti():
+    """Recupera tutti i pazienti salvati nel database ordinati dal più recente"""
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        # Seleziona i record ordinandoli per ID decrescente
+        cur.execute("SELECT id, nome, data_nascita, sintomi, livello_dolore, codice_assegnato FROM pazienti_triage ORDER BY id DESC;")
+        rows = cur.fetchall()
+        cur.close()
+        conn.close()
+        return rows
+    except Exception as e:
+        print(f"[ERRORE DB GET_ALL_PAZIENTI] {e}")
+        return []
