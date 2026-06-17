@@ -175,14 +175,15 @@
                 document.getElementById('val_dolore_cam').innerText = doloreRilevato;
                 document.getElementById('val_confidenza_cam').innerText = data.webcam.confidence ? parseFloat(data.webcam.confidence).toFixed(1) : "0";
 
-                // --- LOGICA DEL FLUSSO GUIDATO DI TRIAGE CON COLORI ALLINEATI ---
+                // --- LOGICA DEL FLUSSO GUIDATO DI TRIAGE RESTRITTIVA ---
                 const codice = data.dialogflow.codice || "-";
                 const nomeInserito = data.dialogflow.nome && data.dialogflow.nome !== "-";
                 const dataInserita = data.dialogflow.data_nascita && data.dialogflow.data_nascita !== "-";
                 const sintomiInseriti = data.dialogflow.sintomi && data.dialogflow.sintomi !== "-";
-                const fotoAcquisita = doloreRilevato !== "-";
+                const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
 
-                if (codice !== "-") {
+                if (codice !== "-" && fotoAcquisita) {
+                    // Sblocca il salvataggio SOLO se il codice è generato E la foto è stata scattata
                     txtCodice.innerText = codice;
                     boxCodiceAssegnato.style.display = "block";
                     btnSalva.style.display = "inline-block";
@@ -202,12 +203,10 @@
                         boxCodiceAssegnato.style.color = "#333333";
                         boxCodiceAssegnato.style.border = "2px solid #ccc";
                         workflowCard.style.borderLeftColor = "#ccc";
-                    } else {
-                        boxCodiceAssegnato.style.backgroundColor = "#28a745";
-                        workflowCard.style.borderLeftColor = "#007bff";
                     }
 
                 } else {
+                    // Se manca la foto o i dati, nascondi il tasto Salva e il rettangolo codice
                     btnSalva.style.display = "none";
                     boxCodiceAssegnato.style.display = "none";
                     boxCodiceAssegnato.style.color = "#ffffff";
@@ -215,11 +214,14 @@
                     workflowCard.style.borderLeftColor = "#007bff";
 
                     if (!fotoAcquisita) {
-                        txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per avviare la stima dell'espressione algica.";
+                        // Forza l'utente a fare la foto come prima operazione o blocco di controllo
+                        txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong>. Senza l'acquisizione della foto non sarà possibile calcolare il codice triage.";
                     } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti)) {
-                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Espressione catturata! Interagisci con l'assistente virtuale in chat per inserire l'anagrafica, i dati di nascita e i sintomi descritti.";
+                        // Se la foto c'è, guida il completamento della chat
+                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Espressione catturata! Interagisci con l'assistente virtuale in chat per inserire l'anagrafica, la data di nascita e tutti i sintomi.";
                     } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti) {
-                        txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Raccolta completata. Digita o chiedi all'assistente di <i>'analizzare il dolore'</i> o confermare il triage per l'assegnazione finale del codice.";
+                        // Step 3 accessibile solo se tutto l'iter preliminare comprensivo di foto è valido
+                        txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Tutti i dati e i parametri visivi sono pronti. Attendi la convalida medica o scrivi all'assistente di confermare la situazione per sbloccare l'archiviazione.";
                     }
                 }
             } catch (error) {

@@ -137,18 +137,20 @@ def reset_triage():
 
 @app.route('/api/stato_triage', methods=['GET'])
 def stato_triage():
-    # Richiamiamo il dizionario condiviso dal modulo globals
+    # Recuperiamo i dati correnti dai moduli globals
     nome = globals.dati_paziente.get('nome', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     data_n = globals.dati_paziente.get('data_nascita', '-')
     livello = globals.ultimo_dato_dolore.get('pain_level', '-')
     
-    # Calcoliamo il codice in tempo reale basandoci sulla logica centralizzata di database.py
-    if nome != "-" and sintomi != "-" and data_n != "-":
-        # Usa la funzione ufficiale di database.py!
+    # VINCOLO CRITICO: Il codice si calcola SOLO se la foto è stata acquisita (livello != "-")
+    # insieme a tutti i dati anagrafici della chat
+    if nome != "-" and sintomi != "-" and data_n != "-" and livello != "-":
+        # Usa la funzione ufficiale di database.py
         codice_reale, _ = calcola_triage(sintomi, livello)
         globals.dati_paziente['codice'] = codice_reale
     else:
+        # Se manca anche un solo dato (inclusa la foto), il codice rimane bloccato
         globals.dati_paziente['codice'] = "-"
 
     response = jsonify({"webcam": globals.ultimo_dato_dolore, "dialogflow": globals.dati_paziente})
