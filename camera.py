@@ -1,10 +1,12 @@
 # camera.py
+import os
 import cv2
-import cvlib as cv
-import numpy as np
 import time
+import numpy as np
+import cvlib as cv
 import globals
 
+# Recupera il modello pre-caricato dal modulo principale
 def camera_worker(model, class_names):
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
@@ -45,7 +47,7 @@ def camera_worker(model, class_names):
             fy2 = min(frame.shape[0], endY + buffer_y)
             
             cv2.rectangle(display_frame, (fx1, fy1), (fx2, fy2), (0, 255, 255), 2)
-            cv2.putText(display_frame, "Volto", (fx1, fy1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
+            cv2.putText(display_frame, "Persona", (fx1, fy1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 255), 2)
 
         if globals.capture_requested:
             globals.capture_requested = False

@@ -1,7 +1,7 @@
 # globals.py
 
 ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
-dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-"}
+dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-"}
 
 camera_active = True
 capture_requested = False
