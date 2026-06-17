@@ -7,7 +7,7 @@
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         .container { display: flex; gap: 20px; max-width: 1200px; margin: auto; flex-direction: column; }
-        .main-row { display: flex; gap: 20px; width: 100%; }
+        .main-row { display: flex; gap: 20px; width: 100%; align-items: flex-start; }
         .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex: 1; }
         h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #333; margin-top: 0; }
         .data-row { margin-bottom: 15px; font-size: 1.1em; }
@@ -22,17 +22,17 @@
         .btn-acquisisci:hover { background-color: #0056b3; }
         .btn-reset { background-color: #dc3545; }
         .btn-reset:hover { background-color: #c82333; }
-        .btn-salva { background-color: #28a745; }
+        .btn-salva { background-color: #28a745; width: 100%; }
         .btn-salva:hover { background-color: #218838; }
         .btn-disabled { background-color: #6c757d; cursor: not-allowed; }
         
-        /* Box Istruzioni e Flusso */
-        .instruction-box { background: #fff; border-left: 5px solid #007bff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
-        .code-rect { display: none; color: white; padding: 15px 30px; font-size: 1.6em; font-weight: bold; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.15); animation: pulse 1.5s infinite; }
+        /* Box Istruzioni e Flusso riadattato per la colonna destra */
+        .instruction-box { background: #fff; border-left: 5px solid #007bff; border-radius: 8px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px; }
+        .code-rect { display: none; color: white; padding: 12px 20px; font-size: 1.4em; font-weight: bold; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); animation: pulse 1.5s infinite; margin-top: 15px; }
         
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.03); }
+            50% { transform: scale(1.02); }
             100% { transform: scale(1); }
         }
     </style>
@@ -62,6 +62,7 @@
 
     <div class="container">
         <div class="main-row">
+            
             <div class="card">
                 <h2>Visione Computerizzata</h2>
                 <div class="video-container">
@@ -78,31 +79,31 @@
                 </div>
             </div>
 
-            <div class="card">
-                <h2>Dati Paziente</h2>
-                <div class="data-row"><span class="label">Nome:</span> <span id="df_nome">-</span></div>
-                <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
-                <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span></div>
-                <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="color: #d9534f; font-weight: bold;">-</span></div>
-            </div>
-        </div>
-
-        <div class="instruction-box" id="workflowCard">
-            <div style="flex: 2;">
-                <h3 style="margin-top: 0; color: #333; font-size: 1.2em;">📋 Stato Avanzamento Operazioni</h3>
-                <div id="txtIstruzione" style="font-size: 1.1em; color: #555; line-height: 1.48;">
-                    Inizializzazione del flusso guida...
-                </div>
+            <div style="flex: 1; display: flex; flex-direction: column;">
                 
-                <div class="btn-group" style="max-width: 250px; margin-top: 15px;">
-                    <button id="btnSalva" class="btn-salva" onclick="salvaPaziente()" style="display: none;">💾 Salva nel DB</button>
+                <div class="card">
+                    <h2>Dati Paziente</h2>
+                    <div class="data-row"><span class="label">Nome:</span> <span id="df_nome">-</span></div>
+                    <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
+                    <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span></div>
+                    <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="color: #d9534f; font-weight: bold;">-</span></div>
                 </div>
-            </div>
-            
-            <div style="flex: 1; display: flex; justify-content: flex-end; align-items: center;">
-                <div id="boxCodiceAssegnato" class="code-rect">
-                    CODICE: <span id="txtCodice">-</span>
+
+                <div class="instruction-box" id="workflowCard">
+                    <h3 style="margin-top: 0; color: #333; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 5px;">📋 Avanzamento Operazioni</h3>
+                    <div id="txtIstruzione" style="font-size: 1em; color: #555; line-height: 1.45; min-height: 60px;">
+                        Inizializzazione del flusso guida...
+                    </div>
+                    
+                    <div id="boxCodiceAssegnato" class="code-rect">
+                        CODICE: <span id="txtCodice">-</span>
+                    </div>
+
+                    <div class="btn-group" style="margin-top: 12px;">
+                        <button id="btnSalva" class="btn-salva" onclick="salvaPaziente()" style="display: none;">💾 Salva nel DB</button>
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -183,11 +184,10 @@
                 const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
 
                 if (codice !== "-" && fotoAcquisita) {
-                    // Sblocca il salvataggio SOLO se il codice è generato E la foto è stata scattata
                     txtCodice.innerText = codice;
                     boxCodiceAssegnato.style.display = "block";
                     btnSalva.style.display = "inline-block";
-                    txtIstruzione.innerHTML = "<strong>Codice generato correttamente!</strong> Verifica il riepilogo clinico. Ora puoi procedere con il salvataggio nel database centrale oppure scartare la scheda clinica con il tasto 'Nuovo Paziente'.";
+                    txtIstruzione.innerHTML = "<strong>Codice generato correttamente!</strong> Verifica il riepilogo. Ora puoi procedere con il salvataggio o scartare la scheda con 'Nuovo Paziente'.";
                     
                     if (codice === "ROSSO") {
                         boxCodiceAssegnato.style.backgroundColor = "#dc3545";
@@ -206,7 +206,6 @@
                     }
 
                 } else {
-                    // Se manca la foto o i dati, nascondi il tasto Salva e il rettangolo codice
                     btnSalva.style.display = "none";
                     boxCodiceAssegnato.style.display = "none";
                     boxCodiceAssegnato.style.color = "#ffffff";
@@ -214,14 +213,11 @@
                     workflowCard.style.borderLeftColor = "#007bff";
 
                     if (!fotoAcquisita) {
-                        // Forza l'utente a fare la foto come prima operazione o blocco di controllo
-                        txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong>. Senza l'acquisizione della foto non sarà possibile calcolare il codice triage.";
+                        txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per sbloccare l'algoritmo clinico.";
                     } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti)) {
-                        // Se la foto c'è, guida il completamento della chat
-                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Espressione catturata! Interagisci con l'assistente virtuale in chat per inserire l'anagrafica, la data di nascita e tutti i sintomi.";
+                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale in chat per raccogliere anagrafica e sintomi.";
                     } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti) {
-                        // Step 3 accessibile solo se tutto l'iter preliminare comprensivo di foto è valido
-                        txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Tutti i dati e i parametri visivi sono pronti. Attendi la convalida medica o scrivi all'assistente di confermare la situazione per sbloccare l'archiviazione.";
+                        txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Parametri pronti. Attendi la convalida o chiedi all'assistente di confermare il riepilogo per l'emissione del codice.";
                     }
                 }
             } catch (error) {
@@ -254,7 +250,6 @@
             }
         }
 
-        // ATTIVAZIONE DEL POLLING AD OGNI SECONDO
         setInterval(aggiornaDati, 1000);
     </script>
 </body>
