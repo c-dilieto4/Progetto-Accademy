@@ -163,11 +163,12 @@ def salva_paziente():
     data_nascita = globals.dati_paziente.get('data_nascita', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     livello_dolore = globals.ultimo_dato_dolore.get('pain_level', '-')
+    codice_fiscale = globals.dati_paziente.get('codice_fiscale', '-')
     
     if nome == "-" and livello_dolore == "-":
         return jsonify({"status": "error", "message": "Nessun dato valido da salvare."}), 400
 
-    successo, codice, risultato = salva_paziente_db(nome, data_nascita, sintomi, livello_dolore)
+    successo, codice, risultato = salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale)
     
     if successo:
         return jsonify({"status": "ok", "codice": codice, "messaggio": risultato})
