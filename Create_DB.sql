@@ -1,4 +1,3 @@
--- ATTENZIONE: Questa istruzione cancella la tabella esistente e resetta i dati attuali
 DROP TABLE IF EXISTS pazienti_triage;
 
 CREATE TABLE pazienti_triage (
@@ -19,6 +18,8 @@ UPDATE pazienti_triage
 SET sintomi = RTRIM(sintomi, ',') 
 WHERE sintomi LIKE '%,';
 
+------------------------------------------------------------------
+
 CREATE TABLE utenti (
     username VARCHAR(50) PRIMARY KEY,
     nome_completo VARCHAR(100) NOT NULL,
@@ -26,5 +27,4 @@ CREATE TABLE utenti (
     pass VARCHAR(255) NOT NULL
 );
 
--- Concedi i permessi di lettura/scrittura all'utente postgres
 GRANT ALL PRIVILEGES ON TABLE utenti TO www;
