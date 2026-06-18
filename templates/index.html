@@ -195,8 +195,9 @@
                 const dataInserita = data.dialogflow.data_nascita && data.dialogflow.data_nascita !== "-";
                 const sintomiInseriti = data.dialogflow.sintomi && data.dialogflow.sintomi !== "-";
                 const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
+                const cfInserito = data.dialogflow.codice_fiscale && data.dialogflow.codice_fiscale !== "-";
 
-                if (codice !== "-" && fotoAcquisita) {
+                if (codice !== "-" && fotoAcquisita && cfInserito) {
                     txtCodice.innerText = codice;
                     boxCodiceAssegnato.style.display = "block";
                     btnSalva.style.display = "inline-block";
