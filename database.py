@@ -10,20 +10,46 @@ def calcola_triage(sintomi, livello_dolore=None):
     sintomi_str = str(sintomi).lower() if sintomi else ""
     dolore_str = str(livello_dolore).lower() if livello_dolore else ""
 
-    ha_sintomi_gravi = any(s in sintomi_str for s in SINTOMI_GRAVI)
-    ha_sintomi_medi = any(s in sintomi_str for s in SINTOMI_MEDI)
-    ha_sintomi_lievi = any(s in sintomi_str for s in SINTOMI_LIEVI)
+    # Conteggio dei sintomi rilevati
+    count_gravi = sum(1 for s in SINTOMI_GRAVI if s in sintomi_str)
+    count_medi = sum(1 for s in SINTOMI_MEDI if s in sintomi_str)
+    count_lievi = sum(1 for s in SINTOMI_LIEVI if s in sintomi_str)
 
-    teachable_alto = "alto" in dolore_str or "forte" in dolore_str
-    teachable_moderato = "moderato" in dolore_str or "medio" in dolore_str
-    teachable_basso = "basso" in dolore_str or "lieve" in dolore_str
+    # Upgrade dei sintomi (es: aumenta di 1 medio ogni 3 lievi, 1 grave ogni 3 medi)
+    count_medi += count_lievi // 3
+    count_gravi += count_medi // 3
 
-    print(f"[TRIAGE] Sintomi: gravi={ha_sintomi_gravi}, medi={ha_sintomi_medi}, lievi={ha_sintomi_lievi}")
-    print(f"[TRIAGE] Teachable: alto={teachable_alto}, moderato={teachable_moderato}, basso={teachable_basso}")
+    # Determinazione score base dei sintomi (0 - 3)
+    if count_gravi > 0:
+        score_sintomi = 3
+    elif count_medi > 0:
+        score_sintomi = 2
+    elif count_lievi > 0:
+        score_sintomi = 1
+    else:
+        score_sintomi = 0
 
-    if ha_sintomi_gravi or teachable_alto:
+    # Determinazione score teachable dalla foto (0 - 3)
+    if "alto" in dolore_str or "forte" in dolore_str:
+        score_teachable = 3
+    elif "moderato" in dolore_str or "medio" in dolore_str:
+        score_teachable = 2
+    elif "basso" in dolore_str or "lieve" in dolore_str:
+        score_teachable = 1
+    else:
+        score_teachable = 0
+
+    # Algoritmo ponderato: 70% sintomi, 30% teachable
+    punteggio_totale = (0.7 * score_sintomi) + (0.3 * score_teachable)
+
+    print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi}")
+    print(f"[TRIAGE] Teachable: score_teachable={score_teachable}")
+    print(f"[TRIAGE] Punteggio totale: {punteggio_totale:.2f}")
+
+    # Assegnazione codice
+    if punteggio_totale >= 2.1:
         return "ROSSO", "Situazione urgente! Ti prego di sederti, avviso immediatamente il personale medico."
-    elif ha_sintomi_medi or teachable_moderato:
+    elif punteggio_totale >= 1.1:
         return "ARANCIONE", "Situazione moderata. Siediti in sala d'attesa, sarai visitato a breve."
     else:
         return "VERDE", "Situazione lieve. Accomodati in sala d'attesa, verrai chiamato a breve."
