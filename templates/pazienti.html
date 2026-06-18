@@ -79,7 +79,7 @@
 
     <div class="card-table">
         <div class="filter-row">
-            <input type="text" id="searchInput" placeholder="🔍 Cerca per nome, codice fiscale o sintomi..." oninput="filtra()">
+            <input type="text" id="searchInput" placeholder="🔍 Cerca per nome/cognome, data arrivo/nascita, CF o sintomi..." oninput="filtra()">
             <button class="btn-filter btn-tutti active" onclick="impostaFiltro('TUTTI', this)">Tutti</button>
             <button class="btn-filter btn-rosso inactive" onclick="impostaFiltro('ROSSO', this)">🔴 Rosso</button>
             <button class="btn-filter btn-arancione inactive" onclick="impostaFiltro('ARANCIONE', this)">🟠 Arancione</button>
@@ -100,7 +100,13 @@
             </thead>
             <tbody id="tbody">
                 {% for p in pazienti %}
-                <tr data-codice="{{ p[5] }}" data-nome="{{ p[1] | lower }}" data-sintomi="{{ p[3] | lower }}" data-cf="{{ p[6] | lower if p[6] else '' }}">
+                <tr data-codice="{{ p[5] }}" 
+                    data-nome="{{ p[1] | lower }}" 
+                    data-sintomi="{{ p[3] | lower }}" 
+                    data-cf="{{ p[6] | lower if p[6] else '' }}" 
+                    data-arrivo="{{ p[7].strftime('%d/%m/%Y %H:%M') if p[7] else '' }}"
+                    data-nascita="{% if p[2] and 'T' in p[2] %}{{ p[2].split('T')[0] }}{% else %}{{ p[2] }}{% endif %}">
+                    
                     <td>
                         {% if p[7] %}
                             {{ p[7].strftime('%d/%m/%Y %H:%M') }}
@@ -183,8 +189,13 @@
                 const sintomi = riga.getAttribute('data-sintomi') || '';
                 const codice = riga.getAttribute('data-codice') || '';
                 const cf = riga.getAttribute('data-cf') || '';
+                const arrivo = riga.getAttribute('data-arrivo') || '';
+                
+                // AGGIORNAMENTO: Lettura del nuovo attributo data-nascita
+                const nascita = riga.getAttribute('data-nascita') || '';
 
-                const matchTesto = nome.includes(testo) || sintomi.includes(testo) || cf.includes(testo);
+                // AGGIORNAMENTO: Inclusione della data di nascita nel controllo del testo
+                const matchTesto = nome.includes(testo) || sintomi.includes(testo) || cf.includes(testo) || arrivo.includes(testo) || nascita.includes(testo);
                 const matchFiltro = filtroAttivo === 'TUTTI' || codice === filtroAttivo;
 
                 if (matchTesto && matchFiltro) {

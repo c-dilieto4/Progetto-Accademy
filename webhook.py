@@ -2,6 +2,7 @@
 from flask import jsonify
 import globals
 from database import calcola_triage
+import re  # Importiamo la libreria per le Espressioni Regolari
 
 def pulisci_cf(cf):
     if not cf:
@@ -24,6 +25,13 @@ def pulisci_cf(cf):
     cf = cf.replace(' ', '').strip()
     cf = cf[:16]     
     return cf
+
+def valida_cf(cf):
+    # Regex per il formato esatto: 6 lettere, 2 numeri, 1 lettera, 2 numeri, 1 lettera, 3 numeri, 1 lettera
+    pattern = r'^[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]$'
+    if re.match(pattern, cf):
+        return True
+    return False
 
 def process_dialogflow_webhook(req):
     query_result = req.get('queryResult', {})
@@ -72,14 +80,31 @@ def process_dialogflow_webhook(req):
             else:
                 globals.dati_paziente['data_nascita'] = str(raw_data)
 
-        # PULIZIA CF
+        # PULIZIA E VALIDAZIONE CF
+        cf_errore_msg = ""
         if cf:
-            globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf)
+            cf_pulito = pulisci_cf(cf)
+            if valida_cf(cf_pulito):
+                globals.dati_paziente['codice_fiscale'] = cf_pulito
+            else:
+                globals.dati_paziente['codice_fiscale'] = "-"
+                cf_errore_msg = "Il Codice Fiscale inserito non è valido. Assicurati che contenga 16 caratteri con la giusta alternanza di lettere e numeri. Puoi riscriverlo?"
 
         print(f"[INFO] Dati inseriti nel server: {globals.dati_paziente}")
         
-        # Gestione dinamica dello Slot Filling
-        if not all_required_present:
+        # Gestione dinamica dello Slot Filling con blocco per CF errato
+        if cf_errore_msg:
+            # Azzera il parametro nel contesto per forzare Dialogflow a richiederlo
+            output_contexts = query_result.get('outputContexts', [])
+            for ctx in output_contexts:
+                if 'parameters' in ctx:
+                    ctx['parameters']['codice_fiscale'] = ""
+                    
+            return jsonify({
+                "fulfillmentText": cf_errore_msg,
+                "outputContexts": output_contexts
+            })
+        elif not all_required_present:
             return jsonify({})
         else:
             return jsonify({
@@ -114,9 +139,6 @@ def process_dialogflow_webhook(req):
             else:
                 globals.dati_paziente['data_nascita'] = str(data_followup)
 
-        if cf_followup:
-            globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf_followup)
-
         # Poi sovrascrivi con i nuovi valori se presenti
         nome_nuovo = parameters.get('nome', '')
         sintomi_nuovo = parameters.get('sintomi', '')
@@ -141,8 +163,21 @@ def process_dialogflow_webhook(req):
             else:
                 globals.dati_paziente['data_nascita'] = str(data_nuovo)
 
+        # VALIDAZIONE CF IN FASE DI MODIFICA
+        cf_errore_msg = ""
         if cf_nuovo:
-            globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf_nuovo)
+            cf_pulito = pulisci_cf(cf_nuovo)
+            if valida_cf(cf_pulito):
+                globals.dati_paziente['codice_fiscale'] = cf_pulito
+            else:
+                globals.dati_paziente['codice_fiscale'] = "-"
+                cf_errore_msg = "Il nuovo Codice Fiscale inserito non è valido. Controlla l'alternanza di lettere e numeri. Riprova."
+        elif cf_followup: 
+            cf_pulito = pulisci_cf(cf_followup)
+            if valida_cf(cf_pulito):
+                globals.dati_paziente['codice_fiscale'] = cf_pulito
+            else:
+                globals.dati_paziente['codice_fiscale'] = "-"
 
         print(f"[INFO] Dati modificati: {globals.dati_paziente}")
 
@@ -152,7 +187,17 @@ def process_dialogflow_webhook(req):
                 ctx['parameters']['nome'] = globals.dati_paziente['nome']
                 ctx['parameters']['sintomi'] = [globals.dati_paziente['sintomi']]
                 ctx['parameters']['date'] = globals.dati_paziente['data_nascita']
-                ctx['parameters']['codice_fiscale'] = globals.dati_paziente['codice_fiscale']
+                
+                if cf_errore_msg:
+                    ctx['parameters']['codice_fiscale'] = ""
+                else:
+                    ctx['parameters']['codice_fiscale'] = globals.dati_paziente['codice_fiscale']
+
+        if cf_errore_msg:
+            return jsonify({
+                "fulfillmentText": cf_errore_msg,
+                "outputContexts": output_contexts
+            })
 
         return jsonify({
             "fulfillmentText": "Fatto! Ho aggiornato i tuoi dati.",
