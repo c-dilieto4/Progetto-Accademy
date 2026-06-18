@@ -1,4 +1,3 @@
-#!/home/pepotty/miniconda3/envs/aia/bin/python
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_USE_LEGACY_KERAS'] = '1'
@@ -7,8 +6,6 @@ import sys
 import threading
 from flask import Flask, request, jsonify, render_template, Response, session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-
-# IMPORT DEI MODULI LOCALI MODULARI
 import globals
 from camera import camera_worker, stream_to_browser
 from webhook import process_dialogflow_webhook

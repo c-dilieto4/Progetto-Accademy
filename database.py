@@ -39,7 +39,7 @@ def calcola_triage(sintomi, livello_dolore=None):
     else:
         score_teachable = 0
 
-    # Algoritmo ponderato: 70% sintomi, 30% teachable (arrotondato per evitare imprecisioni dei float)
+    # Algoritmo ponderato
     punteggio_totale = round((0.7 * score_sintomi) + (0.3 * score_teachable), 2)
 
     print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi}")
@@ -68,7 +68,6 @@ def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscal
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
-        # Inserimento standard (l'ID e la data_arrivo vengono gestiti dal DB in automatico)
         query = """
             INSERT INTO pazienti_triage (nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale)
             VALUES (%s, %s, %s, %s, %s, %s)
@@ -145,7 +144,6 @@ def get_all_pazienti():
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
-        # Recupera tutte le colonne ordinate in ordine cronologico decrescente (ID più alto per primo)
         cur.execute("""
             SELECT id, nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale, data_arrivo
             FROM pazienti_triage ORDER BY id DESC;

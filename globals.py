@@ -1,5 +1,3 @@
-# globals.py
-
 ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
 dati_paziente = {
     "nome": "-",

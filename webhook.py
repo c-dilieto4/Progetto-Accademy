@@ -1,4 +1,3 @@
-# webhook.py
 from flask import jsonify
 import globals
 from database import calcola_triage
@@ -41,9 +40,6 @@ def process_dialogflow_webhook(req):
     print(f"[DEBUG] parameters: {parameters}")
     print(f"[DEBUG] followup_params: {followup_params}")
 
-    # =============================================
-    # INTENT: RaccoltaDati (inserimento principale)
-    # =============================================
     if intent_name == 'RaccoltaDati':
         all_required_present = query_result.get('allRequiredParamsPresent', False)
         nome = parameters.get('nome', '')
@@ -78,13 +74,8 @@ def process_dialogflow_webhook(req):
                 "fulfillmentText": f"Grazie {globals.dati_paziente['nome']}! Ho registrato tutti i tuoi dati correttamente."
             })
         else:
-            # Se mancano dati, NON mandare fulfillmentText. 
-            # Restituisci JSON vuoto per far continuare Dialogflow
             return jsonify({})
 
-    # =============================================
-    # INTENT: RaccoltaDati - modifica / custom
-    # =============================================
     elif intent_name in ['RaccoltaDati - custom', 'RaccoltaDati - modifica']:
         # Prima recupera i dati esistenti dal contesto followup
         nome_followup = followup_params.get('nome', '')
@@ -111,7 +102,6 @@ def process_dialogflow_webhook(req):
         if cf_followup:
             globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf_followup)
 
-        # Poi sovrascrivi con i nuovi valori se presenti
         nome_nuovo = parameters.get('nome', '')
         sintomi_nuovo = parameters.get('sintomi', '')
         data_nuovo = parameters.get('date', '')
@@ -151,9 +141,6 @@ def process_dialogflow_webhook(req):
             "outputContexts": output_contexts
         })
 
-    # =============================================
-    # INTENT: RaccoltaDati - cancel
-    # =============================================
     elif intent_name == 'RaccoltaDati - cancel':
         nome = followup_params.get('nome', '') or globals.dati_paziente.get('nome', 'paziente')
         
@@ -177,9 +164,6 @@ def process_dialogflow_webhook(req):
             "fulfillmentText": f"Ho annullato la registrazione di {nome}. Se hai bisogno di aiuto sono qui."
         })
 
-    # =============================================
-    # INTENT: AnalisiDolore
-    # =============================================
     elif intent_name == 'AnalisiDolore':
         livello = globals.ultimo_dato_dolore['pain_level']
         globals.dati_paziente['livello_dolore'] = livello
