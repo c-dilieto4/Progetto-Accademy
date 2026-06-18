@@ -121,10 +121,7 @@
             btnAcquisisci.classList.add('btn-disabled');
             btnAcquisisci.innerText = "⏳ Acquisizione e Ritaglio...";
 
-            fetch('/api/acquisisci', { method: 'POST' })
-                .then(() => {
-                    btnAcquisisci.innerText = "✅ Volto Acquisito";
-                });
+            fetch('/api/acquisisci', { method: 'POST' });
         }
 
         function resetPaziente() {
@@ -197,6 +194,11 @@
                 const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
                 const cfInserito = data.dialogflow.codice_fiscale && data.dialogflow.codice_fiscale !== "-";
 
+                // Sincronizzazione sicura dello stato del pulsante
+                if (fotoAcquisita && btnAcquisisci.innerText === "⏳ Acquisizione e Ritaglio...") {
+                    btnAcquisisci.innerText = "✅ Volto Acquisito";
+                }
+
                 if (codice !== "-" && fotoAcquisita && cfInserito) {
                     txtCodice.innerText = codice;
                     boxCodiceAssegnato.style.display = "block";
@@ -229,6 +231,11 @@
 
                     if (!fotoAcquisita) {
                         txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per sbloccare l'algoritmo clinico.";
+                        if (btnAcquisisci.innerText === "✅ Volto Acquisito") {
+                            btnAcquisisci.disabled = false;
+                            btnAcquisisci.classList.remove('btn-disabled');
+                            btnAcquisisci.innerText = "📸 Acquisisci Volto";
+                        }
                     } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti)) {
                         txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale in chat per raccogliere anagrafica e sintomi.";
                     } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti) {
