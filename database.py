@@ -39,8 +39,8 @@ def calcola_triage(sintomi, livello_dolore=None):
     else:
         score_teachable = 0
 
-    # Algoritmo ponderato: 70% sintomi, 30% teachable
-    punteggio_totale = (0.7 * score_sintomi) + (0.3 * score_teachable)
+    # Algoritmo ponderato: 70% sintomi, 30% teachable (arrotondato per evitare imprecisioni dei float)
+    punteggio_totale = round((0.7 * score_sintomi) + (0.3 * score_teachable), 2)
 
     print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi}")
     print(f"[TRIAGE] Teachable: score_teachable={score_teachable}")
