@@ -26,7 +26,6 @@
         .btn-salva:hover { background-color: #218838; }
         .btn-disabled { background-color: #6c757d; cursor: not-allowed; }
         
-        /* Box Istruzioni e Flusso riadattato per la colonna destra */
         .instruction-box { background: #fff; border-left: 5px solid #007bff; border-radius: 8px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px; }
         .code-rect { display: none; color: white; padding: 12px 20px; font-size: 1.4em; font-weight: bold; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); animation: pulse 1.5s infinite; margin-top: 15px; }
         
@@ -86,7 +85,8 @@
                     <div class="data-row"><span class="label">Nome:</span> <span id="df_nome">-</span></div>
                     <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
                     <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span></div>
-                    <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="color: #d9534f; font-weight: bold;">-</span></div>
+                    <div class="data-row"><span class="label">Codice Fiscale:</span> <span id="df_cf">-</span></div>
+                    <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="font-weight: bold;">-</span></div>
                 </div>
 
                 <div class="instruction-box" id="workflowCard">
@@ -166,6 +166,7 @@
                 document.getElementById('df_nome').innerText = data.dialogflow.nome || "-";
                 document.getElementById('df_data_nascita').innerText = formattaData(data.dialogflow.data_nascita);
                 document.getElementById('df_sintomi').innerText = data.dialogflow.sintomi || "-";
+                document.getElementById('df_cf').innerText = data.dialogflow.codice_fiscale || "-";
                 
                 let doloreRilevato = "-";
                 if (data.webcam.pain_level && data.webcam.pain_level !== "-") {
@@ -173,10 +174,23 @@
                 } else if (data.dialogflow.livello_dolore && data.dialogflow.livello_dolore !== "-") {
                     doloreRilevato = data.dialogflow.livello_dolore;
                 }
-                document.getElementById('val_dolore_cam').innerText = doloreRilevato;
+
+                // Colore dinamico in base al livello di dolore
+                const elDolore = document.getElementById('val_dolore_cam');
+                elDolore.innerText = doloreRilevato;
+                if (doloreRilevato.toLowerCase().includes('alto')) {
+                    elDolore.style.color = '#dc3545'; // rosso
+                } else if (doloreRilevato.toLowerCase().includes('moderato')) {
+                    elDolore.style.color = '#e67e22'; // arancione
+                } else if (doloreRilevato.toLowerCase().includes('basso')) {
+                    elDolore.style.color = '#28a745'; // verde
+                } else {
+                    elDolore.style.color = '#333'; // grigio default
+                }
+
                 document.getElementById('val_confidenza_cam').innerText = data.webcam.confidence ? parseFloat(data.webcam.confidence).toFixed(1) : "0";
 
-                // --- LOGICA DEL FLUSSO GUIDATO DI TRIAGE RESTRITTIVA ---
+                // --- LOGICA DEL FLUSSO GUIDATO DI TRIAGE ---
                 const codice = data.dialogflow.codice || "-";
                 const nomeInserito = data.dialogflow.nome && data.dialogflow.nome !== "-";
                 const dataInserita = data.dialogflow.data_nascita && data.dialogflow.data_nascita !== "-";
@@ -191,18 +205,19 @@
                     
                     if (codice === "ROSSO") {
                         boxCodiceAssegnato.style.backgroundColor = "#dc3545";
+                        boxCodiceAssegnato.style.color = "white";
+                        boxCodiceAssegnato.style.border = "none";
                         workflowCard.style.borderLeftColor = "#dc3545";
                     } else if (codice === "ARANCIONE") {
                         boxCodiceAssegnato.style.backgroundColor = "#e67e22";
+                        boxCodiceAssegnato.style.color = "white";
+                        boxCodiceAssegnato.style.border = "none";
                         workflowCard.style.borderLeftColor = "#e67e22";
                     } else if (codice === "VERDE") {
                         boxCodiceAssegnato.style.backgroundColor = "#28a745";
+                        boxCodiceAssegnato.style.color = "white";
+                        boxCodiceAssegnato.style.border = "none";
                         workflowCard.style.borderLeftColor = "#28a745";
-                    } else if (codice === "BIANCO") {
-                        boxCodiceAssegnato.style.backgroundColor = "#ffffff";
-                        boxCodiceAssegnato.style.color = "#333333";
-                        boxCodiceAssegnato.style.border = "2px solid #ccc";
-                        workflowCard.style.borderLeftColor = "#ccc";
                     }
 
                 } else {
