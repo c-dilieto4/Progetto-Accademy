@@ -229,6 +229,11 @@
 
                     if (!fotoAcquisita) {
                         txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per sbloccare l'algoritmo clinico.";
+                        if (btnAcquisisci.innerText !== "⏳ Acquisizione e Ritaglio...") {
+                            btnAcquisisci.disabled = false;
+                            btnAcquisisci.classList.remove('btn-disabled');
+                            btnAcquisisci.innerText = "📸 Acquisisci Volto";
+                        }
                     } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti)) {
                         txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale in chat per raccogliere anagrafica e sintomi.";
                     } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti) {
