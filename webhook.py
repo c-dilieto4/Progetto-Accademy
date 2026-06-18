@@ -6,12 +6,20 @@ from database import calcola_triage
 def pulisci_cf(cf):
     if not cf:
         return ''
+    
+    # NUOVA ISTRUZIONE: Se Dialogflow invia il dato come lista, estraiamo il primo elemento
+    if isinstance(cf, list):
+        cf = cf[0] if len(cf) > 0 else ''
+        
     cf = str(cf).upper()
     cf = cf.replace('C.F.', '').replace('C.F', '').replace('CF:', '').replace('CF ', '').replace('CF', '', 1)
     
     cf = cf.replace(',', '')
     cf = cf.replace('.', '')
     cf = cf.replace('-', '')
+    
+    # Pulizia extra di sicurezza per parentesi e apici
+    cf = cf.replace('[', '').replace(']', '').replace("'", '').replace('"', '')
     
     cf = cf.replace(' ', '').strip()
     cf = cf[:16]     
