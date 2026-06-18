@@ -8,8 +8,13 @@ def pulisci_cf(cf):
         return ''
     cf = str(cf).upper()
     cf = cf.replace('C.F.', '').replace('C.F', '').replace('CF:', '').replace('CF ', '').replace('CF', '', 1)
+    
+    cf = cf.replace(',', '')
+    cf = cf.replace('.', '')
+    cf = cf.replace('-', '')
+    
     cf = cf.replace(' ', '').strip()
-    cf = cf[:16]  # Il CF italiano è sempre 16 caratteri
+    cf = cf[:16]     
     return cf
 
 def process_dialogflow_webhook(req):

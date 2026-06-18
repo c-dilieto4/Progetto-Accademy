@@ -1,5 +1,5 @@
 CREATE TABLE pazienti_triage (
-    id SERIAL PRIMARY KEY,
+    codice_fiscale VARCHAR(16) PRIMARY KEY,
     nome VARCHAR(100),
     data_nascita VARCHAR(50),
     sintomi TEXT,

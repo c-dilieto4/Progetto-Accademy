@@ -89,9 +89,8 @@
         <table id="tabellapazienti">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Paziente</th>
                     <th>Codice Fiscale</th>
+                    <th>Paziente</th>
                     <th>Data Nascita</th>
                     <th>Sintomi Rilevati</th>
                     <th>Livello Dolore (IA)</th>
@@ -100,16 +99,15 @@
             </thead>
             <tbody id="tbody">
                 {% for p in pazienti %}
-                <tr data-codice="{{ p[5] }}" data-nome="{{ p[1] | lower }}" data-sintomi="{{ p[3] | lower }}" data-cf="{{ p[6] | lower if p[6] else '' }}">
-                    <td>{{ p[0] }}</td>
-                    <td><strong>{{ p[1] }}</strong></td>
+                <tr data-codice="{{ p[5] }}" data-nome="{{ p[1] | lower }}" data-sintomi="{{ p[3] | lower }}" data-cf="{{ p[0] | lower if p[0] else '' }}">
                     <td>
-                        {% if p[6] and p[6] != '-' %}
-                            <span class="cf-badge">{{ p[6] | upper }}</span>
+                        {% if p[0] and p[0] != '-' %}
+                            <span class="cf-badge">{{ p[0] | upper }}</span>
                         {% else %}
                             <span style="color: #aaa;">—</span>
                         {% endif %}
                     </td>
+                    <td><strong>{{ p[1] }}</strong></td>
                     <td>
                         {% if p[2] and 'T' in p[2] %}
                             {{ p[2].split('T')[0] }}

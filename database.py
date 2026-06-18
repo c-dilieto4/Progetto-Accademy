@@ -41,15 +41,23 @@ def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscal
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
+        
+        # Inserimento con gestione del conflitto sul Codice Fiscale (aggiorna i dati se il CF esiste già)
         query = """
             INSERT INTO pazienti_triage (nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale)
             VALUES (%s, %s, %s, %s, %s, %s)
+            ON CONFLICT (codice_fiscale) DO UPDATE SET 
+                nome = EXCLUDED.nome,
+                data_nascita = EXCLUDED.data_nascita,
+                sintomi = EXCLUDED.sintomi, 
+                livello_dolore = EXCLUDED.livello_dolore, 
+                codice_assegnato = EXCLUDED.codice_assegnato;
         """
         cur.execute(query, (nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale))
         conn.commit()
         cur.close()
         conn.close()
-        print(f"[DB] Paziente salvato: {nome} | CF: {codice_fiscale} | Codice: {codice_assegnato}")
+        print(f"[DB] Paziente salvato/aggiornato: {nome} | CF: {codice_fiscale} | Codice: {codice_assegnato}")
         return True, codice_assegnato, messaggio_operatore
     except Exception as e:
         print(f"[ERRORE DB] {e}")
@@ -116,9 +124,11 @@ def get_all_pazienti():
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
+        
+        # Rimosso id, ordinato per nome alfabeticamente
         cur.execute("""
-            SELECT id, nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale
-            FROM pazienti_triage ORDER BY id DESC;
+            SELECT codice_fiscale, nome, data_nascita, sintomi, livello_dolore, codice_assegnato
+            FROM pazienti_triage ORDER BY nome ASC;
         """)
         rows = cur.fetchall()
         cur.close()
