@@ -108,7 +108,7 @@
                             <span style="color: #aaa;">—</span>
                         {% endif %}
                     </td>
-                    <td><strong>{{ p[1] }}</strong></td>
+                    <td><strong>{{ p[1] | title }}</strong></td>
                     <td>
                         {% set cf_text = p[6] | string | replace("[", "") | replace("]", "") | replace("'", "") %}
                         {% if cf_text and cf_text != '-' %}
