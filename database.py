@@ -39,17 +39,18 @@ def calcola_triage(sintomi, livello_dolore=None):
     else:
         score_teachable = 0
 
-    # Algoritmo ponderato
-    punteggio_totale = round((0.7 * score_sintomi) + (0.3 * score_teachable), 2)
+    # Algoritmo ponderato (arrotondato all'intero più vicino)
+    punteggio_float = (0.7 * score_sintomi) + (0.3 * score_teachable)
+    punteggio_intero = max(1, int(round(punteggio_float)))
 
     print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi}")
     print(f"[TRIAGE] Teachable: score_teachable={score_teachable}")
-    print(f"[TRIAGE] Punteggio totale: {punteggio_totale:.2f}")
+    print(f"[TRIAGE] Punteggio totale: {punteggio_float:.2f} -> Arrotondato a {punteggio_intero}")
 
-    # Assegnazione codice
-    if punteggio_totale >= 2.1:
+    # Assegnazione codice basato su interi
+    if punteggio_intero >= 3:
         return "ROSSO", "Situazione urgente! Ti prego di sederti, avviso immediatamente il personale medico."
-    elif punteggio_totale >= 1.1:
+    elif punteggio_intero == 2:
         return "ARANCIONE", "Situazione moderata. Siediti in sala d'attesa, sarai visitato a breve."
     else:
         return "VERDE", "Situazione lieve. Accomodati in sala d'attesa, verrai chiamato a breve."
