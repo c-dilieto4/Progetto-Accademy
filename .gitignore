@@ -156,3 +156,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+
+# Google Service Account Credentials
+service_account.json
+

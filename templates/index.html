@@ -4,36 +4,351 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Triage Assistant</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { display: flex; gap: 20px; max-width: 1200px; margin: auto; flex-direction: column; }
-        .main-row { display: flex; gap: 20px; width: 100%; align-items: flex-start; }
-        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); flex: 1; }
-        h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; color: #333; margin-top: 0; }
-        .data-row { margin-bottom: 15px; font-size: 1.1em; }
-        .label { font-weight: bold; color: #555; }
-        
-        .video-container { width: 100%; height: 350px; background: #000; border-radius: 8px; overflow: hidden; }
-        
-        /* Stile Pulsanti */
-        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        button { flex: 1; padding: 12px; font-size: 1em; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; transition: 0.2s; color: white;}
-        .btn-acquisisci { background-color: #007bff; }
-        .btn-acquisisci:hover { background-color: #0056b3; }
-        .btn-reset { background-color: #dc3545; }
-        .btn-reset:hover { background-color: #c82333; }
-        .btn-salva { background-color: #28a745; width: 100%; }
-        .btn-salva:hover { background-color: #218838; }
-        .btn-disabled { background-color: #6c757d; cursor: not-allowed; }
-        
-        .instruction-box { background: #fff; border-left: 5px solid #007bff; border-radius: 8px; padding: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-top: 20px; }
-        .code-rect { display: none; color: white; padding: 12px 20px; font-size: 1.4em; font-weight: bold; border-radius: 6px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.15); animation: pulse 1.5s infinite; margin-top: 15px; }
-        
+        :root {
+            --blue-900: #0f2557;
+            --blue-700: #1d4ed8;
+            --blue-600: #2563eb;
+            --blue-500: #3b82f6;
+            --blue-100: #e8f0ff;
+            --blue-50: #f4f8ff;
+            --ink-900: #0f172a;
+            --ink-600: #475569;
+            --ink-400: #94a3b8;
+            --line: #e3e9f2;
+            --surface: #ffffff;
+            --bg: #eef3fb;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --orange: #ea580c;
+            --orange-bg: #fff7ed;
+            --green: #16a34a;
+            --green-bg: #f0fdf4;
+            --shadow-sm: 0 1px 2px rgba(15, 37, 87, 0.06);
+            --shadow-md: 0 4px 16px rgba(15, 37, 87, 0.08);
+            --shadow-lg: 0 12px 32px rgba(15, 37, 87, 0.12);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(circle at 100% 0%, rgba(59,130,246,0.07), transparent 45%),
+                radial-gradient(circle at 0% 100%, rgba(37,99,235,0.05), transparent 40%);
+            margin: 0;
+            padding: 28px;
+            color: var(--ink-900);
+        }
+
+        .container { display: flex; gap: 22px; max-width: 1200px; margin: auto; flex-direction: column; }
+        .main-row { display: flex; gap: 22px; width: 100%; align-items: flex-start; }
+
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--line);
+            flex: 1;
+            transition: box-shadow 0.25s ease;
+        }
+        .card:hover { box-shadow: var(--shadow-lg); }
+
+        h2 {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-size: 1.05em;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 14px;
+            color: var(--ink-900);
+            margin: 0 0 18px 0;
+        }
+        h2::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--blue-600);
+            box-shadow: 0 0 0 4px var(--blue-100);
+            flex-shrink: 0;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 14px;
+            font-size: 0.98em;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--line);
+        }
+        .data-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .label {
+            font-weight: 600;
+            color: var(--ink-600);
+            font-size: 0.88em;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .video-container {
+            width: 100%;
+            height: 350px;
+            background: linear-gradient(160deg, #0c1424, #1a2740);
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 18px; }
+
+        button {
+            padding: 13px 16px;
+            font-size: 0.95em;
+            font-family: inherit;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+            color: white;
+            letter-spacing: 0.01em;
+        }
+        button:hover:not(:disabled) { transform: translateY(-2px); }
+        button:active:not(:disabled) { transform: translateY(0); }
+        button:disabled { cursor: not-allowed; opacity: 0.7; transform: none; }
+
+        .btn-acquisisci {
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            flex: 1;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.30);
+        }
+        .btn-acquisisci:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(37,99,235,0.40); }
+
+        .btn-reset {
+            background: var(--surface);
+            color: var(--red);
+            border: 1.5px solid #fca5a5;
+            flex: 1;
+            box-shadow: var(--shadow-sm);
+        }
+        .btn-reset:hover { background: var(--red-bg); box-shadow: 0 6px 16px rgba(220,38,38,0.15); }
+
+        .btn-salva {
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            width: auto;
+            padding: 10px 18px;
+            font-size: 0.88em;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.30);
+        }
+        .btn-salva:hover:not(:disabled) { box-shadow: 0 8px 20px rgba(37,99,235,0.40); }
+
+        .btn-disabled { background: #cbd5e1 !important; color: #64748b !important; box-shadow: none !important; }
+
+        .btn-mic {
+            background: linear-gradient(135deg, var(--blue-700), var(--blue-900));
+            font-size: 0.88em;
+            padding: 11px 18px;
+            box-shadow: 0 4px 14px rgba(15,37,87,0.30);
+        }
+        .btn-mic:hover { box-shadow: 0 8px 20px rgba(15,37,87,0.40); }
+        .btn-mic.recording {
+            background: linear-gradient(135deg, var(--red), #991b1b);
+            animation: pulseMic 1.4s infinite;
+        }
+
+        @keyframes pulseMic {
+            0% { box-shadow: 0 0 0 0 rgba(220,53,69,0.45); }
+            70% { box-shadow: 0 0 0 13px rgba(220,53,69,0); }
+            100% { box-shadow: 0 0 0 0 rgba(220,53,69,0); }
+        }
+
+        .voice-log {
+            margin-top: 14px;
+            font-size: 0.92em;
+            color: var(--ink-600);
+            background: var(--blue-50);
+            border: 1px solid var(--blue-100);
+            border-radius: 10px;
+            padding: 12px 14px;
+            min-height: 40px;
+            line-height: 1.5;
+        }
+        .voice-log .utente { color: var(--blue-700); font-weight: 700; }
+        .voice-log .bot { color: var(--green); font-weight: 700; }
+
+        .instruction-box {
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-left: 4px solid var(--blue-600);
+            border-radius: 14px;
+            padding: 20px;
+            box-shadow: var(--shadow-md);
+            margin-top: 22px;
+            transition: border-left-color 0.3s ease;
+        }
+        .instruction-box h3 {
+            margin: 0 0 12px 0;
+            font-size: 0.95em;
+            font-weight: 700;
+            color: var(--ink-900);
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .code-rect {
+            display: none;
+            color: white;
+            padding: 10px 16px;
+            font-size: 1em;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 14px;
+            animation: pulse 2s infinite;
+        }
+
         @keyframes pulse {
             0% { transform: scale(1); }
-            50% { transform: scale(1.02); }
+            50% { transform: scale(1.015); }
             100% { transform: scale(1); }
         }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto 24px auto;
+            padding: 0 4px;
+            box-sizing: border-box;
+        }
+        .topbar h1 {
+            color: var(--ink-900);
+            margin: 0;
+            font-size: 1.55em;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .topbar h1::before {
+            content: "";
+            width: 10px;
+            height: 28px;
+            border-radius: 4px;
+            background: linear-gradient(180deg, var(--blue-500), var(--blue-700));
+            display: inline-block;
+        }
+        .topbar-actions { display: flex; align-items: center; gap: 10px; }
+        .badge-medico {
+            font-weight: 600;
+            color: var(--ink-600);
+            font-size: 0.92em;
+            background: var(--blue-50);
+            border: 1px solid var(--blue-100);
+            padding: 8px 14px;
+            border-radius: 10px;
+        }
+        .link-btn {
+            padding: 11px 16px;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            display: inline-block;
+        }
+        .link-btn:hover { transform: translateY(-2px); }
+        .link-archivio { background: linear-gradient(135deg, var(--blue-600), var(--blue-700)); box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+        .link-archivio:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.4); }
+        .link-esci { background: var(--surface); color: var(--ink-600); border: 1.5px solid var(--line); box-shadow: var(--shadow-sm); }
+        .link-esci:hover { background: #f8fafc; }
+        .link-login { background: linear-gradient(135deg, var(--blue-600), var(--blue-700)); box-shadow: 0 4px 14px rgba(37,99,235,0.3); }
+        .link-login:hover { box-shadow: 0 8px 20px rgba(37,99,235,0.4); }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(3px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; animation: fadeIn 0.2s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .modal-box {
+            background: var(--surface);
+            border-radius: 18px;
+            padding: 32px 30px;
+            max-width: 360px;
+            width: 90%;
+            text-align: center;
+            box-shadow: var(--shadow-lg);
+            animation: popIn 0.25s ease;
+        }
+        @keyframes popIn {
+            from { transform: scale(0.92) translateY(8px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--green-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6em;
+            margin: 0 auto 16px auto;
+        }
+        .modal-icon.error { background: var(--red-bg); }
+
+        .modal-box h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.15em;
+            font-weight: 700;
+            color: var(--ink-900);
+        }
+        .modal-box p {
+            margin: 0 0 22px 0;
+            font-size: 0.93em;
+            color: var(--ink-600);
+            line-height: 1.5;
+        }
+        .modal-btn {
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            color: white;
+            border: none;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.92em;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(37,99,235,0.30);
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+        }
+        .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.40); }
     </style>
     
     <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
@@ -46,17 +361,22 @@
 </head>
 <body>
 
-    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 20px auto; padding: 0 20px; box-sizing: border-box;">
-        <h1 style="color: #333; margin: 0; font-size: 1.8em;">Pannello di Controllo - Triage</h1>
-        <div>
+    <div class="topbar">
+        <h1>Pannello di Controllo &mdash; Triage</h1>
+        <div class="topbar-actions">
+            <button id="btnMic" class="btn-mic" onclick="toggleMicrofono()">🎤 Parla con l'assistente</button>
             {% if session.get('utente') %}
-                <span style="font-weight: bold; margin-right: 15px; color: #555;">👋 Medico: {{ session.get('nome') }}</span>
-                <a href="/pazienti" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; margin-right: 10px; font-size: 0.9em;">📂 Vedi Archivio</a>
-                <a href="/logout" style="padding: 10px 15px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9em;">🚪 Esci</a>
+                <span class="badge-medico">👋 Dr. {{ session.get('nome') }}</span>
+                <a href="/pazienti" class="link-btn link-archivio">📂 Archivio</a>
+                <a href="/logout" class="link-btn link-esci">Esci</a>
             {% else %}
-                <a href="/login" style="padding: 10px 15px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 0.9em;">🔑 Accedi (Area Medici)</a>
+                <a href="/login" class="link-btn link-login">🔑 Accedi (Area Medici)</a>
             {% endif %}
         </div>
+    </div>
+
+    <div style="max-width: 1200px; margin: 0 auto 22px auto; box-sizing: border-box;">
+        <div class="voice-log" id="voiceLog">🎤 Premi "Parla con l'assistente" in alto e parla per registrare i tuoi dati vocalmente.</div>
     </div>
 
     <div class="container">
@@ -68,13 +388,13 @@
                     <img id="videoLive" src="/video_feed" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 
-                <div class="btn-group" style="flex-direction: column;">
+                <div class="btn-group">
                     <button id="btnAcquisisci" class="btn-acquisisci" onclick="scattaFoto()">📸 Acquisisci Volto</button>
-                    <button id="btnReset" class="btn-reset" onclick="resetPaziente()" style="margin-top: 5px;">👤 Nuovo Paziente</button>
+                    <button id="btnReset" class="btn-reset" onclick="resetPaziente()">👤 Nuovo Paziente</button>
                 </div>
 
-                <div class="data-row" style="margin-top: 15px; font-size: 0.9em; color: #666;">
-                    Confidenza IA: <span id="val_confidenza_cam">0</span>%
+                <div class="data-row" style="margin-top: 15px; font-size: 0.9em; color: var(--ink-400); border-bottom: none;">
+                    Confidenza IA: <span id="val_confidenza_cam" style="color: var(--ink-900); font-weight: 700;">0</span>%
                 </div>
             </div>
 
@@ -82,15 +402,16 @@
                 
                 <div class="card">
                     <h2>Dati Paziente</h2>
-                    <div class="data-row"><span class="label">Nome e Cognome:</span> <span id="df_nome" style="text-transform: capitalize;">-</span></div>                    <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
+                    <div class="data-row"><span class="label">Nome e Cognome:</span> <span id="df_nome" style="text-transform: capitalize;">-</span></div>
+                    <div class="data-row"><span class="label">Data di Nascita:</span> <span id="df_data_nascita">-</span></div>
                     <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span></div>
                     <div class="data-row"><span class="label">Codice Fiscale:</span> <span id="df_cf">-</span></div>
                     <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam" style="font-weight: bold;">-</span></div>
                 </div>
 
                 <div class="instruction-box" id="workflowCard">
-                    <h3 style="margin-top: 0; color: #333; font-size: 1.2em; border-bottom: 1px solid #eee; padding-bottom: 5px;">📋 Avanzamento Operazioni</h3>
-                    <div id="txtIstruzione" style="font-size: 1em; color: #555; line-height: 1.45; min-height: 60px;">
+                    <h3>📋 Avanzamento Operazioni</h3>
+                    <div id="txtIstruzione" style="font-size: 1em; color: var(--ink-600); line-height: 1.45; min-height: 60px;">
                         Inizializzazione del flusso guida...
                     </div>
                     
@@ -98,11 +419,32 @@
                         CODICE: <span id="txtCodice">-</span>
                     </div>
 
-                    <div class="btn-group" style="margin-top: 12px;">
+                    <div class="btn-group" style="margin-top: 14px; justify-content: flex-end;">
                         <button id="btnSalva" class="btn-salva" onclick="salvaPaziente()" style="display: none;">💾 Salva nel DB</button>
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon" id="modalIcon">✅</div>
+            <h3 id="modalTitle">Paziente salvato</h3>
+            <p id="modalText">I dati sono stati archiviati correttamente.</p>
+            <button class="modal-btn" onclick="chiudiModal()">Continua</button>
+        </div>
+    </div>
+
+    <div id="confirmOverlay" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-icon" style="background: var(--orange-bg);">⚠️</div>
+            <h3>Nuovo paziente</h3>
+            <p>Sei sicuro di voler scartare la sessione corrente? Tutti i dati non salvati andranno persi.</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="modal-btn" style="background: var(--surface); color: var(--ink-600); border: 1.5px solid var(--line); box-shadow: var(--shadow-sm);" onclick="chiudiConfirm()">Annulla</button>
+                <button class="modal-btn" style="background: linear-gradient(135deg, var(--red), #991b1b); box-shadow: 0 4px 14px rgba(220,38,38,0.30);" onclick="confermaReset()">Sì, scarta</button>
             </div>
         </div>
     </div>
@@ -115,6 +457,8 @@
         const btnReset = document.getElementById('btnReset');
         const btnSalva = document.getElementById('btnSalva');
         const workflowCard = document.getElementById('workflowCard');
+        const btnMic = document.getElementById('btnMic');
+        const voiceLog = document.getElementById('voiceLog');
 
         function scattaFoto() {
             btnAcquisisci.disabled = true;
@@ -125,20 +469,37 @@
         }
 
         function resetPaziente() {
-            if(confirm("Sei sicuro di voler scartare la sessione corrente per inserire un nuovo paziente?")) {
-                btnAcquisisci.disabled = false;
-                btnAcquisisci.classList.remove('btn-disabled');
-                btnAcquisisci.innerText = "📸 Acquisisci Volto";
-        
-                btnSalva.disabled = false;
-                btnSalva.innerText = "💾 Salva nel DB";
-                
-                btnSalva.style.display = "none";
-                boxCodiceAssegnato.style.display = "none";
-                workflowCard.style.borderLeftColor = "#007bff";
-                
-                fetch('/api/reset', { method: 'POST' });
+            document.getElementById('confirmOverlay').classList.add('show');
+        }
+
+        function chiudiConfirm() {
+            document.getElementById('confirmOverlay').classList.remove('show');
+        }
+
+        function confermaReset() {
+            chiudiConfirm();
+
+            btnAcquisisci.disabled = false;
+            btnAcquisisci.classList.remove('btn-disabled');
+            btnAcquisisci.innerText = "📸 Acquisisci Volto";
+
+            btnSalva.disabled = false;
+            btnSalva.innerText = "💾 Salva nel DB";
+            btnSalva.style.background = "linear-gradient(135deg, var(--blue-600), var(--blue-700))";
+            btnSalva.style.boxShadow = "0 4px 14px rgba(37,99,235,0.30)";
+
+            btnSalva.style.display = "none";
+            boxCodiceAssegnato.style.display = "none";
+            workflowCard.style.borderLeftColor = "var(--blue-600)";
+
+            voiceLog.innerHTML = "🎤 Premi \"Parla con l'assistente\" in alto e parla per registrare i tuoi dati vocalmente.";
+
+            const dfMessenger = document.querySelector('df-messenger');
+            if (dfMessenger && typeof dfMessenger.clearStorage === 'function') {
+                dfMessenger.clearStorage();
             }
+
+            fetch('/api/reset', { method: 'POST' });
         }
 
         function formattaData(dataString) {
@@ -171,22 +532,20 @@
                     doloreRilevato = data.dialogflow.livello_dolore;
                 }
 
-                // Colore dinamico in base al livello di dolore
                 const elDolore = document.getElementById('val_dolore_cam');
                 elDolore.innerText = doloreRilevato;
                 if (doloreRilevato.toLowerCase().includes('alto')) {
-                    elDolore.style.color = '#dc3545'; // rosso
+                    elDolore.style.color = 'var(--red)';
                 } else if (doloreRilevato.toLowerCase().includes('medio')) {
-                    elDolore.style.color = '#e67e22'; // arancione
+                    elDolore.style.color = 'var(--orange)';
                 } else if (doloreRilevato.toLowerCase().includes('basso')) {
-                    elDolore.style.color = '#28a745'; // verde
+                    elDolore.style.color = 'var(--green)';
                 } else {
-                    elDolore.style.color = '#333'; // grigio default
+                    elDolore.style.color = 'var(--ink-900)';
                 }
 
                 document.getElementById('val_confidenza_cam').innerText = data.webcam.confidence ? parseFloat(data.webcam.confidence).toFixed(1) : "0";
 
-                // --- LOGICA DEL FLUSSO GUIDATO DI TRIAGE ---
                 const codice = data.dialogflow.codice || "-";
                 const nomeInserito = data.dialogflow.nome && data.dialogflow.nome !== "-";
                 const dataInserita = data.dialogflow.data_nascita && data.dialogflow.data_nascita !== "-";
@@ -194,7 +553,6 @@
                 const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
                 const cfInserito = data.dialogflow.codice_fiscale && data.dialogflow.codice_fiscale !== "-";
 
-                // Sincronizzazione sicura dello stato del pulsante
                 if (fotoAcquisita && btnAcquisisci.innerText === "⏳ Acquisizione e Ritaglio...") {
                     btnAcquisisci.innerText = "✅ Volto Acquisito";
                 }
@@ -206,20 +564,23 @@
                     txtIstruzione.innerHTML = "<strong>Codice generato correttamente!</strong> Verifica il riepilogo. Ora puoi procedere con il salvataggio o scartare la scheda con 'Nuovo Paziente'.";
                     
                     if (codice === "ROSSO") {
-                        boxCodiceAssegnato.style.backgroundColor = "#dc3545";
+                        boxCodiceAssegnato.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
+                        boxCodiceAssegnato.style.boxShadow = "0 8px 24px rgba(220,38,38,0.35)";
                         boxCodiceAssegnato.style.color = "white";
                         boxCodiceAssegnato.style.border = "none";
-                        workflowCard.style.borderLeftColor = "#dc3545";
+                        workflowCard.style.borderLeftColor = "var(--red)";
                     } else if (codice === "ARANCIONE") {
-                        boxCodiceAssegnato.style.backgroundColor = "#e67e22";
+                        boxCodiceAssegnato.style.background = "linear-gradient(135deg, #fb923c, #c2410c)";
+                        boxCodiceAssegnato.style.boxShadow = "0 8px 24px rgba(234,88,12,0.35)";
                         boxCodiceAssegnato.style.color = "white";
                         boxCodiceAssegnato.style.border = "none";
-                        workflowCard.style.borderLeftColor = "#e67e22";
+                        workflowCard.style.borderLeftColor = "var(--orange)";
                     } else if (codice === "VERDE") {
-                        boxCodiceAssegnato.style.backgroundColor = "#28a745";
+                        boxCodiceAssegnato.style.background = "linear-gradient(135deg, #4ade80, #15803d)";
+                        boxCodiceAssegnato.style.boxShadow = "0 8px 24px rgba(22,163,74,0.35)";
                         boxCodiceAssegnato.style.color = "white";
                         boxCodiceAssegnato.style.border = "none";
-                        workflowCard.style.borderLeftColor = "#28a745";
+                        workflowCard.style.borderLeftColor = "var(--green)";
                     }
 
                 } else {
@@ -227,7 +588,7 @@
                     boxCodiceAssegnato.style.display = "none";
                     boxCodiceAssegnato.style.color = "#ffffff";
                     boxCodiceAssegnato.style.border = "none";
-                    workflowCard.style.borderLeftColor = "#007bff";
+                    workflowCard.style.borderLeftColor = "var(--blue-600)";
 
                     if (!fotoAcquisita) {
                         txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per sbloccare l'algoritmo clinico.";
@@ -236,9 +597,9 @@
                             btnAcquisisci.classList.remove('btn-disabled');
                             btnAcquisisci.innerText = "📸 Acquisisci Volto";
                         }
-                    } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti)) {
-                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale in chat per raccogliere anagrafica e sintomi.";
-                    } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti) {
+                    } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti || !cfInserito)) {
+                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale (chat o microfono in alto) per raccogliere anagrafica e sintomi.";
+                    } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti && cfInserito) {
                         txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Parametri pronti. Attendi la convalida o chiedi all'assistente di confermare il riepilogo per l'emissione del codice.";
                     }
                 }
@@ -256,23 +617,107 @@
                 const data = await response.json();
                 
                 if (data.status === "ok") {
-                    alert(`Paziente salvato con successo! Codice assegnato: ${data.codice}`);
+                    mostraModal(true, "Paziente salvato", `I dati sono stati archiviati correttamente. Codice assegnato: <strong>${data.codice}</strong>.`);
                     btnSalva.innerText = "✅ Salvato";
-                    btnSalva.style.backgroundColor = "#28a745";
+                    btnSalva.style.background = "linear-gradient(135deg, #16a34a, #15803d)";
+                    btnSalva.style.boxShadow = "0 4px 14px rgba(22,163,74,0.30)";
                 } else {
-                    alert(`Impossibile salvare: ${data.message}`);
+                    mostraModal(false, "Salvataggio non riuscito", data.message || "Si è verificato un errore durante il salvataggio.");
                     btnSalva.innerText = "💾 Salva nel DB";
                     btnSalva.disabled = false;
                 }
             } catch (error) {
                 console.error("Errore durante il salvataggio:", error);
-                alert("Errore di connessione al server durante il salvataggio.");
+                mostraModal(false, "Errore di connessione", "Non è stato possibile contattare il server durante il salvataggio.");
                 btnSalva.innerText = "💾 Salva nel DB";
                 btnSalva.disabled = false;
             }
         }
 
+        function mostraModal(successo, titolo, testo) {
+            const overlay = document.getElementById('modalOverlay');
+            const icon = document.getElementById('modalIcon');
+            document.getElementById('modalTitle').innerText = titolo;
+            document.getElementById('modalText').innerHTML = testo;
+            icon.innerText = successo ? "✅" : "⚠️";
+            icon.classList.toggle('error', !successo);
+            overlay.classList.add('show');
+        }
+
+        function chiudiModal() {
+            document.getElementById('modalOverlay').classList.remove('show');
+        }
+
         setInterval(aggiornaDati, 1000);
+
+        // ================================================================
+        // CHATBOT VOCALE - Riconoscimento (Web Speech API) + WebSocket + sintesi
+        // ================================================================
+
+        const socket = io();
+        let recognition = null;
+        let registrando = false;
+
+        socket.on('connect', () => {
+            console.log('[VOICE] Connesso al server WebSocket');
+        });
+
+        socket.on('voice_response', (data) => {
+            voiceLog.innerHTML =
+                (data.testo_utente ? `<span class="utente">Tu:</span> ${data.testo_utente}<br>` : '') +
+                `<span class="bot">Assistente:</span> ${data.risposta_testo}`;
+
+            if (data.risposta_testo && 'speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(data.risposta_testo);
+                utterance.lang = 'it-IT';
+                window.speechSynthesis.speak(utterance);
+            }
+        });
+
+        function toggleMicrofono() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                voiceLog.innerHTML = "❌ Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.";
+                return;
+            }
+
+            if (!registrando) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'it-IT';
+                recognition.continuous = false;
+                recognition.interimResults = false;
+
+                recognition.onstart = () => {
+                    registrando = true;
+                    btnMic.classList.add('recording');
+                    btnMic.innerText = "🔴 Sto ascoltando... (parla ora)";
+                    voiceLog.innerHTML = "🎤 In ascolto...";
+                };
+
+                recognition.onresult = (event) => {
+                    const testoRiconosciuto = event.results[0][0].transcript;
+                    voiceLog.innerHTML = `<span class="utente">Tu:</span> ${testoRiconosciuto}<br>⏳ Elaborazione...`;
+                    socket.emit('voice_text', { testo: testoRiconosciuto });
+                };
+
+                recognition.onerror = (event) => {
+                    console.error("Errore riconoscimento vocale:", event.error);
+                    voiceLog.innerHTML = "❌ Errore nel riconoscimento vocale: " + event.error;
+                };
+
+                recognition.onend = () => {
+                    registrando = false;
+                    btnMic.classList.remove('recording');
+                    btnMic.innerText = "🎤 Parla con l'assistente";
+                };
+
+                recognition.start();
+            } else {
+                recognition.stop();
+            }
+        }
     </script>
 </body>
 </html>

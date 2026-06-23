@@ -1,3 +1,4 @@
+#app.py
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['TF_USE_LEGACY_KERAS'] = '1'
@@ -5,11 +6,14 @@ os.environ['TF_USE_LEGACY_KERAS'] = '1'
 import sys
 import threading
 from flask import Flask, request, jsonify, render_template, Response, session, redirect, url_for, flash
+from flask_socketio import SocketIO, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 import globals
 from camera import camera_worker, stream_to_browser
 from webhook import process_dialogflow_webhook
 from database import salva_paziente_db, get_user, user_exists, email_exists, register_user, get_all_pazienti, calcola_triage
+from voice_bot import invia_testo_a_dialogflow, chiudi_sessione
+
 # --- SETUP MODELLO AI ---
 script_dir = os.path.dirname(os.path.abspath(__file__))
 model_path = os.path.join(script_dir, "keras_model.h5")
@@ -44,6 +48,9 @@ except Exception as e:
 # --- SETUP FLASK ---
 app = Flask(__name__)
 app.secret_key = 'triage_secret_key_2026'
+
+# --- SETUP SOCKETIO (per il chatbot vocale) ---
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # --- AVVIO THREAD WEBCAM DAL MODULO CAMERA ---
 threading.Thread(target=camera_worker, args=(model, class_names), daemon=True).start()
@@ -129,25 +136,20 @@ def reset_triage():
     globals.captured_image_bytes = None
     globals.capture_requested = False
     globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
-    globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-"}
+    globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"}
     return jsonify({"status": "ok"})
 
 @app.route('/api/stato_triage', methods=['GET'])
 def stato_triage():
-    # Recuperiamo i dati correnti dai moduli globals
     nome = globals.dati_paziente.get('nome', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     data_n = globals.dati_paziente.get('data_nascita', '-')
     livello = globals.ultimo_dato_dolore.get('pain_level', '-')
     
-    # VINCOLO CRITICO: Il codice si calcola SOLO se la foto è stata acquisita (livello != "-")
-    # insieme a tutti i dati anagrafici della chat
     if nome != "-" and sintomi != "-" and data_n != "-" and livello != "-":
-        # Usa la funzione ufficiale di database.py
         codice_reale, _ = calcola_triage(sintomi, livello)
         globals.dati_paziente['codice'] = codice_reale
     else:
-        # Se manca anche un solo dato (inclusa la foto), il codice rimane bloccato
         globals.dati_paziente['codice'] = "-"
 
     response = jsonify({"webcam": globals.ultimo_dato_dolore, "dialogflow": globals.dati_paziente})
@@ -180,6 +182,56 @@ def visualizza_pazienti():
     pazienti = get_all_pazienti()
     return render_template('pazienti.html', pazienti=pazienti)
 
+
+# --- EVENTI SOCKETIO PER IL CHATBOT VOCALE ---
+# Il riconoscimento vocale (STT) e la sintesi (TTS) avvengono lato browser
+# tramite Web Speech API. Qui riceviamo solo TESTO gia' trascritto e lo
+# inviamo a Dialogflow, restituendo la risposta testuale.
+
+@socketio.on('connect')
+def handle_connect():
+    print(f"[VOICE] Client connesso: {request.sid}")
+
+
+@socketio.on('disconnect')
+def handle_disconnect():
+    print(f"[VOICE] Client disconnesso: {request.sid}")
+    chiudi_sessione(request.sid)
+
+
+@socketio.on('voice_text')
+def handle_voice_text(data):
+    """
+    Riceve il testo gia' trascritto dal browser (Web Speech API),
+    lo invia a Dialogflow e restituisce la risposta.
+    """
+    try:
+        testo_utente = data.get('testo', '').strip()
+        print(f"[VOICE] Utente ha detto: {testo_utente}")
+
+        if not testo_utente:
+            emit('voice_response', {
+                'testo_utente': '',
+                'risposta_testo': 'Non ho sentito nulla, riprova.'
+            })
+            return
+
+        risposta_testo = invia_testo_a_dialogflow(testo_utente, request.sid)
+        print(f"[VOICE] Risposta Dialogflow: {risposta_testo}")
+
+        emit('voice_response', {
+            'testo_utente': testo_utente,
+            'risposta_testo': risposta_testo
+        })
+
+    except Exception as e:
+        print(f"[ERRORE VOICE] {e}")
+        emit('voice_response', {
+            'testo_utente': '',
+            'risposta_testo': 'Errore nella comunicazione con Dialogflow.'
+        })
+
+
 if __name__ == '__main__':
     print("\n--- AVVIO SERVER TRIAGE MODULARE ---")
-    app.run(host='0.0.0.0', port=5000, threaded=True)
+    socketio.run(app, host='0.0.0.0', port=5000)

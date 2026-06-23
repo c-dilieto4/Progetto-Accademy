@@ -5,104 +5,180 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Triage System - Login</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background: #f4f7f6; 
-            margin: 0; 
+        :root {
+            --blue-900: #0f2557;
+            --blue-700: #1d4ed8;
+            --blue-600: #2563eb;
+            --blue-500: #3b82f6;
+            --blue-100: #e8f0ff;
+            --blue-50: #f4f8ff;
+            --ink-900: #0f172a;
+            --ink-600: #475569;
+            --ink-400: #94a3b8;
+            --line: #e3e9f2;
+            --surface: #ffffff;
+            --bg: #eef3fb;
+            --red: #dc2626;
+            --red-bg: #fef2f2;
+            --green: #16a34a;
+            --green-bg: #f0fdf4;
+            --shadow-md: 0 4px 16px rgba(15, 37, 87, 0.08);
+            --shadow-lg: 0 20px 50px rgba(15, 37, 87, 0.16);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(circle at 100% 0%, rgba(59,130,246,0.10), transparent 45%),
+                radial-gradient(circle at 0% 100%, rgba(37,99,235,0.07), transparent 40%);
+            margin: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            color: var(--ink-900);
         }
-        .login-container { 
-            background: white; 
-            border-radius: 10px; 
-            padding: 30px; 
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--blue-500), var(--blue-900));
+            box-shadow: 0 6px 18px rgba(37,99,235,0.35);
+        }
+        .brand-text {
+            font-weight: 800;
+            font-size: 1.25em;
+            letter-spacing: -0.02em;
+            color: var(--ink-900);
+        }
+
+        .login-container {
+            background: var(--surface);
+            border-radius: 18px;
+            padding: 34px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--line);
             width: 100%;
-            max-width: 400px; 
+            max-width: 400px;
             box-sizing: border-box;
         }
-        h2 { 
-            border-bottom: 2px solid #007bff; 
-            padding-bottom: 10px; 
-            color: #333; 
+
+        h2 {
+            font-weight: 700;
+            font-size: 1.2em;
+            letter-spacing: -0.01em;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 14px;
+            color: var(--ink-900);
             text-align: center;
             margin-top: 0;
+            margin-bottom: 22px;
         }
-        .input-row {
-            position: relative;
-            margin-top: 20px;
-            margin-bottom: 5px;
-        }
+
+        .input-row { position: relative; margin-top: 16px; margin-bottom: 4px; }
         .input-row i {
             position: absolute;
-            left: 12px;
+            left: 14px;
             top: 50%;
             transform: translateY(-50%);
-            color: #6c757d;
+            color: var(--ink-400);
+            font-size: 0.9em;
         }
         .text {
             width: 100%;
-            padding: 12px 12px 12px 40px;
-            font-size: 1em;
-            border: 1px solid #ced4da;
-            border-radius: 5px;
+            padding: 13px 14px 13px 42px;
+            font-size: 0.95em;
+            font-family: inherit;
+            border: 1.5px solid var(--line);
+            border-radius: 10px;
             box-sizing: border-box;
             outline: none;
-            transition: 0.2s;
+            background: var(--blue-50);
+            transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
         }
         .text:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 5px rgba(0,123,255,0.25);
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 4px var(--blue-100);
+            background: var(--surface);
         }
+
         .submit-btn {
             width: 100%;
-            padding: 12px;
-            font-size: 1em;
-            font-weight: bold;
+            padding: 14px;
+            font-size: 0.97em;
+            font-family: inherit;
+            font-weight: 700;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            background-color: #007bff;
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            box-shadow: 0 4px 14px rgba(37,99,235,0.30);
             color: white;
-            margin-top: 20px;
-            transition: 0.2s;
+            margin-top: 22px;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
         }
-        .submit-btn:hover { background-color: #0056b3; }
-        
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.40); }
+
+        .submit-btn.green {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            box-shadow: 0 4px 14px rgba(22,163,74,0.30);
+        }
+        .submit-btn.green:hover { box-shadow: 0 8px 20px rgba(22,163,74,0.40); }
+
         .switch-text {
             text-align: center;
             margin-top: 20px;
-            font-size: 0.95em;
-            color: #555;
+            font-size: 0.92em;
+            color: var(--ink-600);
         }
         .link-btn {
             background: none;
             border: none;
-            color: #007bff;
-            font-weight: bold;
+            color: var(--blue-600);
+            font-weight: 700;
             cursor: pointer;
             padding: 0;
             font-size: 1em;
-            text-decoration: underline;
+            font-family: inherit;
         }
-        
-        /* Box Messaggi di Errore/Successo Flassati da Flask */
+        .link-btn:hover { color: var(--blue-700); }
+
         .alert-box {
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            font-size: 0.95em;
-            text-align: center;
+            padding: 12px 14px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+            font-size: 0.9em;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            font-weight: 500;
         }
-        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background: var(--red-bg); color: var(--red); border: 1px solid #fecaca; }
+        .alert-success { background: var(--green-bg); color: var(--green); border: 1px solid #bbf7d0; }
     </style>
 </head>
 <body>
+
+    <div class="brand">
+        <div class="brand-mark"></div>
+        <div class="brand-text">Triage Assistant</div>
+    </div>
 
     <div class="login-container">
         
@@ -168,7 +244,7 @@
                     <input type="password" name="conferma_password" id="reg_conferma_password" class="text" placeholder="Conferma Password">
                 </div>
 
-                <button type="submit" class="submit-btn" style="background-color: #28a745;">Registrati</button>
+                <button type="submit" class="submit-btn green">Registrati</button>
             </form>
             
             <div class="switch-text">
@@ -185,7 +261,6 @@
             const toSignUp = document.getElementById("toSignUp");
             const toSignIn = document.getElementById("toSignIn");
 
-            // 1. Gestione Switch tra i due moduli (Logica pulita senza ricaricare la pagina)
             toSignUp.addEventListener("click", () => {
                 signInSection.style.display = "none";
                 signUpSection.style.display = "block";
@@ -195,7 +270,6 @@
                 signInSection.style.display = "block";
             });
 
-            // 2. Validazione lato client del Form di Acceso (Sign In)
             const signInForm = document.getElementById("signInForm");
             signInForm.addEventListener("submit", (event) => {
                 const username = signInForm.querySelector("#login_username");
@@ -215,7 +289,6 @@
                 }
             });
 
-            // 3. Validazione lato client del Form di Registrazione (Sign Up)
             const signUpForm = document.getElementById("signUpForm");
             signUpForm.addEventListener("submit", (event) => {
                 const nome = signUpForm.querySelector("#reg_nome");
@@ -231,7 +304,6 @@
                     return;
                 }
                 
-                // Controllo regex per l'email speculare al tuo codice originale
                 const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9-]+\.[a-zA-Z]+$/;
                 if (email.value.trim() === "" || !email.value.match(emailRegex)) {
                     alert("Devi inserire un'email valida!");
