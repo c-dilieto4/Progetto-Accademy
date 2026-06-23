@@ -6,7 +6,7 @@ SINTOMI_GRAVI = ['dolore al petto', 'difficoltà respiratorie', 'difficoltà res
 SINTOMI_MEDI = ['febbre', 'nausea', 'vomito', 'vertigini', 'mal di stomaco']
 SINTOMI_LIEVI = ['mal di testa', 'tosse', 'raffreddore', 'stanchezza']
 
-def calcola_triage(sintomi, livello_dolore=None):
+def calcola_triage(sintomi, livello_dolore=None, face_detected=True, confidence=100.0):
     sintomi_str = str(sintomi).lower() if sintomi else ""
     dolore_str = str(livello_dolore).lower() if livello_dolore else ""
 
@@ -15,37 +15,38 @@ def calcola_triage(sintomi, livello_dolore=None):
     count_medi = sum(1 for s in SINTOMI_MEDI if s in sintomi_str)
     count_lievi = sum(1 for s in SINTOMI_LIEVI if s in sintomi_str)
 
-    # Upgrade dei sintomi (es: aumenta di 1 medio ogni 3 lievi, 1 grave ogni 3 medi)
-    count_medi += count_lievi // 3
-    count_gravi += count_medi // 3
-
-    # Determinazione score base dei sintomi (0 - 3)
-    if count_gravi > 0:
-        score_sintomi = 3
-    elif count_medi > 0:
-        score_sintomi = 2
-    elif count_lievi > 0:
-        score_sintomi = 1
-    else:
-        score_sintomi = 0
+    # Logica Fuzzy: Scala continua per i sintomi
+    peso_grave = 3.0
+    peso_medio = 1.5
+    peso_lieve = 0.5
+    
+    score_sintomi = count_gravi * peso_grave + count_medi * peso_medio + count_lievi * peso_lieve
+    score_sintomi = min(3.0, score_sintomi)
 
     # Determinazione score teachable dalla foto (0 - 3)
+    score_teachable = 0.0
     if "alto" in dolore_str or "forte" in dolore_str:
-        score_teachable = 3
+        score_teachable = 3.0
     elif "moderato" in dolore_str or "medio" in dolore_str:
-        score_teachable = 2
+        score_teachable = 2.0
     elif "basso" in dolore_str or "lieve" in dolore_str:
-        score_teachable = 1
+        score_teachable = 1.0
+
+    # Pesi Dinamici
+    if not face_detected or confidence < 50.0:
+        peso_nlp = 1.0
+        peso_cv = 0.0
     else:
-        score_teachable = 0
+        peso_nlp = 0.7
+        peso_cv = 0.3
 
     # Algoritmo ponderato (arrotondato all'intero più vicino)
-    punteggio_float = (0.7 * score_sintomi) + (0.3 * score_teachable)
+    punteggio_float = (peso_nlp * score_sintomi) + (peso_cv * score_teachable)
     punteggio_intero = max(1, int(round(punteggio_float)))
 
-    print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi}")
-    print(f"[TRIAGE] Teachable: score_teachable={score_teachable}")
-    print(f"[TRIAGE] Punteggio totale: {punteggio_float:.2f} -> Arrotondato a {punteggio_intero}")
+    print(f"[TRIAGE] Sintomi: gravi={count_gravi}, medi={count_medi}, lievi={count_lievi} -> score_sintomi={score_sintomi:.2f}")
+    print(f"[TRIAGE] Teachable: score_teachable={score_teachable:.2f}, face_detected={face_detected}, conf={confidence:.1f}")
+    print(f"[TRIAGE] Pesi: NLP={peso_nlp}, CV={peso_cv} -> Totale: {punteggio_float:.2f} -> Arrotondato a {punteggio_intero}")
 
     # Assegnazione codice basato su interi
     if punteggio_intero >= 3:
@@ -63,8 +64,8 @@ DB_CONFIG = {
     'port': '5432'
 }
 
-def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale):
-    codice_assegnato, messaggio_operatore = calcola_triage(sintomi, livello_dolore)
+def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale, face_detected=True, confidence=100.0):
+    codice_assegnato, messaggio_operatore = calcola_triage(sintomi, livello_dolore, face_detected, confidence)
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()

@@ -135,7 +135,7 @@ def reset_triage():
     globals.camera_active = True
     globals.captured_image_bytes = None
     globals.capture_requested = False
-    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
+    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
     globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"}
     return jsonify({"status": "ok"})
 
@@ -145,9 +145,11 @@ def stato_triage():
     sintomi = globals.dati_paziente.get('sintomi', '-')
     data_n = globals.dati_paziente.get('data_nascita', '-')
     livello = globals.ultimo_dato_dolore.get('pain_level', '-')
+    face_detected = globals.ultimo_dato_dolore.get('face_detected', False)
+    confidence = globals.ultimo_dato_dolore.get('confidence', 0.0)
     
     if nome != "-" and sintomi != "-" and data_n != "-" and livello != "-":
-        codice_reale, _ = calcola_triage(sintomi, livello)
+        codice_reale, _ = calcola_triage(sintomi, livello, face_detected, confidence)
         globals.dati_paziente['codice'] = codice_reale
     else:
         globals.dati_paziente['codice'] = "-"
@@ -162,12 +164,14 @@ def salva_paziente():
     data_nascita = globals.dati_paziente.get('data_nascita', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     livello_dolore = globals.ultimo_dato_dolore.get('pain_level', '-')
+    face_detected = globals.ultimo_dato_dolore.get('face_detected', False)
+    confidence = globals.ultimo_dato_dolore.get('confidence', 0.0)
     codice_fiscale = globals.dati_paziente.get('codice_fiscale', '-')
     
     if nome == "-" and livello_dolore == "-":
         return jsonify({"status": "error", "message": "Nessun dato valido da salvare."}), 400
 
-    successo, codice, risultato = salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale)
+    successo, codice, risultato = salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale, face_detected, confidence)
     
     if successo:
         return jsonify({"status": "ok", "codice": codice, "messaggio": risultato})

@@ -52,10 +52,25 @@ def camera_worker(model, class_names):
         if globals.capture_requested:
             globals.capture_requested = False
             
-            if last_face_box is not None:
-                face_crop = frame[fy1:fy2, fx1:fx2]
+            # Forza un controllo immediato sul frame attuale per evitare falsi positivi 
+            # causati dalla cache di detect_face (eseguito ogni 5 frame)
+            faces_now, _ = cv.detect_face(frame)
+            if len(faces_now) > 0:
+                current_face_box = max(faces_now, key=lambda f: (f[2] - f[0]) * (f[3] - f[1]))
+                face_detected = True
+                startX, startY, endX, endY = current_face_box
+                buffer_x = int((endX - startX) * 0.25)
+                buffer_y = int((endY - startY) * 0.25)
+                fx1_c = max(0, startX - buffer_x)
+                fy1_c = max(0, startY - buffer_y)
+                fx2_c = min(frame.shape[1], endX + buffer_x)
+                fy2_c = min(frame.shape[0], endY + buffer_y)
+                face_crop = frame[fy1_c:fy2_c, fx1_c:fx2_c]
             else:
+                face_detected = False
                 face_crop = frame.copy()
+
+            globals.ultimo_dato_dolore['face_detected'] = face_detected
             
             try:
                 rgb_frame = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)

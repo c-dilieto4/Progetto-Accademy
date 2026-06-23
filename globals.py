@@ -1,4 +1,4 @@
-ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
+ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
 dati_paziente = {
     "nome": "-",
     "data_nascita": "-",
