@@ -19,6 +19,7 @@ SET sintomi = RTRIM(sintomi, ',')
 WHERE sintomi LIKE '%,';
 
 ------------------------------------------------------------------
+DROP TABLE IF EXISTS utenti;
 
 CREATE TABLE utenti (
     username VARCHAR(50) PRIMARY KEY,
