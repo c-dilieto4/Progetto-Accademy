@@ -319,6 +319,7 @@
             margin: 0 auto 24px auto;
             padding: 0 4px;
             box-sizing: border-box;
+            gap: 16px;
         }
 
         .topbar h1 {
@@ -330,6 +331,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .topbar h1::before {
@@ -341,10 +343,107 @@
             display: inline-block;
         }
 
+        /* ===========================================================
+           INSEGNA "HOSPITALBOT" - effetto luminoso stile ospedale
+           =========================================================== */
+        .hospital-sign {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-width: 0;
+        }
+
+        .hospital-sign-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 22px;
+            background: linear-gradient(180deg, #2a3a5c, #3a4d75);
+            border-radius: 10px;
+            box-shadow:
+                inset 0 0 0 1px rgba(255,255,255,0.08),
+                0 6px 20px rgba(15, 37, 87, 0.20);
+        }
+
+        .hospital-cross {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+        .hospital-cross::before,
+        .hospital-cross::after {
+            content: "";
+            position: absolute;
+            background: #ffffff;
+            border-radius: 2px;
+            animation: signFlicker 2.6s infinite;
+        }
+        .hospital-cross::before {
+            width: 100%;
+            height: 30%;
+            top: 35%;
+            left: 0;
+        }
+        .hospital-cross::after {
+            width: 30%;
+            height: 100%;
+            left: 35%;
+            top: 0;
+        }
+
+        .hospital-sign-text {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800;
+            font-size: 1.3em;
+            letter-spacing: 0.04em;
+            color: #ffffff;
+            text-shadow:
+                0 0 6px rgba(255,255,255,0.7),
+                0 0 14px rgba(255,255,255,0.45),
+                0 0 26px rgba(120,170,255,0.35);
+            animation: signFlicker 2.6s infinite;
+            white-space: nowrap;
+        }
+
+        @keyframes signFlicker {
+            0%, 38% {
+                opacity: 1;
+                text-shadow:
+                    0 0 6px rgba(255,255,255,0.7),
+                    0 0 14px rgba(255,255,255,0.45),
+                    0 0 26px rgba(120,170,255,0.35);
+            }
+            40% {
+                opacity: 0.35;
+                text-shadow: none;
+            }
+            42%, 78% {
+                opacity: 1;
+                text-shadow:
+                    0 0 6px rgba(255,255,255,0.7),
+                    0 0 14px rgba(255,255,255,0.45),
+                    0 0 26px rgba(120,170,255,0.35);
+            }
+            80% {
+                opacity: 0.3;
+                text-shadow: none;
+            }
+            82%, 100% {
+                opacity: 1;
+                text-shadow:
+                    0 0 6px rgba(255,255,255,0.7),
+                    0 0 14px rgba(255,255,255,0.45),
+                    0 0 26px rgba(120,170,255,0.35);
+            }
+        }
+
         .topbar-actions {
             display: flex;
             align-items: center;
             gap: 10px;
+            flex-shrink: 0;
         }
 
         .badge-medico {
@@ -508,6 +607,14 @@
 
     <div class="topbar">
         <h1>Pannello di Controllo &mdash; Triage</h1>
+
+        <div class="hospital-sign">
+            <div class="hospital-sign-box">
+                <div class="hospital-cross"></div>
+                <span class="hospital-sign-text">HospitalBot</span>
+            </div>
+        </div>
+
         <div class="topbar-actions">
             <button id="btnMic" class="btn-mic" onclick="toggleMicrofono()">🎤 Parla con l'assistente</button>
             {% if session.get('utente') %}
