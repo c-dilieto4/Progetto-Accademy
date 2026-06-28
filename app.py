@@ -56,6 +56,14 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 threading.Thread(target=camera_worker, args=(model, class_names), daemon=True).start()
 
 
+def campo_compilato(valore):
+    return bool(valore and str(valore).strip() != "-")
+
+
+def socket_sid():
+    return getattr(request, "sid", "")
+
+
 # --- ROTTE DI AUTENTICAZIONE CLINICA ---
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -137,6 +145,7 @@ def reset_triage():
     globals.capture_requested = False
     globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
     globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"}
+    globals.paziente_salvato = False
     return jsonify({"status": "ok"})
 
 @app.route('/api/stato_triage', methods=['GET'])
@@ -144,17 +153,23 @@ def stato_triage():
     nome = globals.dati_paziente.get('nome', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     data_n = globals.dati_paziente.get('data_nascita', '-')
+    codice_fiscale = globals.dati_paziente.get('codice_fiscale', '-')
     livello = globals.ultimo_dato_dolore.get('pain_level', '-')
-    face_detected = globals.ultimo_dato_dolore.get('face_detected', False)
+    livello_disponibile = campo_compilato(livello)
+    face_detected = bool(globals.ultimo_dato_dolore.get('face_detected', False) and livello_disponibile)
     confidence = globals.ultimo_dato_dolore.get('confidence', 0.0)
     
-    if nome != "-" and sintomi != "-" and data_n != "-" and livello != "-":
+    if all(campo_compilato(v) for v in (nome, sintomi, data_n, codice_fiscale)):
         codice_reale, _ = calcola_triage(sintomi, livello, face_detected, confidence)
         globals.dati_paziente['codice'] = codice_reale
     else:
         globals.dati_paziente['codice'] = "-"
 
-    response = jsonify({"webcam": globals.ultimo_dato_dolore, "dialogflow": globals.dati_paziente})
+    response = jsonify({
+        "webcam": globals.ultimo_dato_dolore,
+        "dialogflow": globals.dati_paziente,
+        "salvato": globals.paziente_salvato
+    })
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     return response
 
@@ -164,17 +179,29 @@ def salva_paziente():
     data_nascita = globals.dati_paziente.get('data_nascita', '-')
     sintomi = globals.dati_paziente.get('sintomi', '-')
     livello_dolore = globals.ultimo_dato_dolore.get('pain_level', '-')
-    face_detected = globals.ultimo_dato_dolore.get('face_detected', False)
+    livello_disponibile = campo_compilato(livello_dolore)
+    face_detected = bool(globals.ultimo_dato_dolore.get('face_detected', False) and livello_disponibile)
     confidence = globals.ultimo_dato_dolore.get('confidence', 0.0)
     codice_fiscale = globals.dati_paziente.get('codice_fiscale', '-')
     
-    if nome == "-" and livello_dolore == "-":
-        return jsonify({"status": "error", "message": "Nessun dato valido da salvare."}), 400
+    if not all(campo_compilato(v) for v in (nome, data_nascita, sintomi, codice_fiscale)):
+        return jsonify({"status": "error", "message": "Completa nome, data di nascita, sintomi e codice fiscale prima di salvare."}), 400
+
+    if globals.paziente_salvato:
+        codice = globals.dati_paziente.get('codice', '-')
+        return jsonify({
+            "status": "ok",
+            "codice": codice,
+            "messaggio": "Paziente gia' salvato nel database.",
+            "salvato": True
+        })
 
     successo, codice, risultato = salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale, face_detected, confidence)
     
     if successo:
-        return jsonify({"status": "ok", "codice": codice, "messaggio": risultato})
+        globals.dati_paziente['codice'] = codice
+        globals.paziente_salvato = True
+        return jsonify({"status": "ok", "codice": codice, "messaggio": risultato, "salvato": True})
     else:
         return jsonify({"status": "error", "message": risultato}), 500
 
@@ -194,13 +221,14 @@ def visualizza_pazienti():
 
 @socketio.on('connect')
 def handle_connect():
-    print(f"[VOICE] Client connesso: {request.sid}")
+    print(f"[VOICE] Client connesso: {socket_sid()}")
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print(f"[VOICE] Client disconnesso: {request.sid}")
-    chiudi_sessione(request.sid)
+    sid = socket_sid()
+    print(f"[VOICE] Client disconnesso: {sid}")
+    chiudi_sessione(sid)
 
 
 @socketio.on('voice_text')
@@ -220,7 +248,7 @@ def handle_voice_text(data):
             })
             return
 
-        risposta_testo = invia_testo_a_dialogflow(testo_utente, request.sid)
+        risposta_testo = invia_testo_a_dialogflow(testo_utente, socket_sid())
         print(f"[VOICE] Risposta Dialogflow: {risposta_testo}")
 
         emit('voice_response', {
@@ -238,4 +266,4 @@ def handle_voice_text(data):
 
 if __name__ == '__main__':
     print("\n--- AVVIO SERVER TRIAGE MODULARE ---")
-    socketio.run(app, host='0.0.0.0', port=5000)
+    socketio.run(app, host='0.0.0.0', port=5000, allow_unsafe_werkzeug=True)

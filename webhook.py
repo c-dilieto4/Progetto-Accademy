@@ -2,27 +2,38 @@ from flask import jsonify
 import globals
 from database import calcola_triage
 
+
 def pulisci_cf(cf):
     if not cf:
         return ''
-    
-    # Se Dialogflow invia il dato come lista, estraiamo il primo elemento
+
     if isinstance(cf, list):
         cf = cf[0] if len(cf) > 0 else ''
-        
+
     cf = str(cf).upper()
     cf = cf.replace('C.F.', '').replace('C.F', '').replace('CF:', '').replace('CF ', '').replace('CF', '', 1)
-    
     cf = cf.replace(',', '')
     cf = cf.replace('.', '')
     cf = cf.replace('-', '')
-    
-    # Pulizia di sicurezza per parentesi e apici
     cf = cf.replace('[', '').replace(']', '').replace("'", '').replace('"', '')
-    
     cf = cf.replace(' ', '').strip()
-    cf = cf[:16]  # Il CF italiano è sempre 16 caratteri
+    cf = cf[:16]
     return cf
+
+
+def pulisci_nome(nome):
+    if not nome:
+        return ''
+
+    if isinstance(nome, list):
+        nome = nome[0] if len(nome) > 0 else ''
+
+    return str(nome).strip().title()
+
+
+def marca_dati_modificati():
+    globals.paziente_salvato = False
+
 
 def process_dialogflow_webhook(req):
     query_result = req.get('queryResult', {})
@@ -41,29 +52,27 @@ def process_dialogflow_webhook(req):
     print(f"[DEBUG] followup_params: {followup_params}")
 
     if intent_name == 'RaccoltaDati':
+        marca_dati_modificati()
         all_required_present = query_result.get('allRequiredParamsPresent', False)
         nome = parameters.get('nome', '')
         sintomi = parameters.get('sintomi', '')
         raw_data = parameters.get('date', '')
         cf = parameters.get('codice_fiscale', '')
 
-        # Salva i dati applicando la formattazione corretta
-        if nome:
-            if isinstance(nome, list) and len(nome) > 0:
-                globals.dati_paziente['nome'] = str(nome[0]).title()
-            else:
-                globals.dati_paziente['nome'] = str(nome).title()
-                
+        nome_pulito = pulisci_nome(nome)
+        if nome_pulito:
+            globals.dati_paziente['nome'] = nome_pulito
+
         if sintomi:
             sintomi_uniti = ", ".join([str(s) for s in sintomi]) if isinstance(sintomi, list) else str(sintomi)
             globals.dati_paziente['sintomi'] = sintomi_uniti.strip().rstrip(',')
-            
+
         if raw_data:
             if isinstance(raw_data, list) and len(raw_data) > 0:
                 globals.dati_paziente['data_nascita'] = str(raw_data[0])
             else:
                 globals.dati_paziente['data_nascita'] = str(raw_data)
-                
+
         if cf:
             globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf)
 
@@ -73,32 +82,29 @@ def process_dialogflow_webhook(req):
             return jsonify({
                 "fulfillmentText": f"Grazie {globals.dati_paziente['nome']}! Ho registrato tutti i tuoi dati correttamente."
             })
-        else:
-            return jsonify({})
+        return jsonify({})
 
     elif intent_name in ['RaccoltaDati - custom', 'RaccoltaDati - modifica']:
-        # Prima recupera i dati esistenti dal contesto followup
+        marca_dati_modificati()
         nome_followup = followup_params.get('nome', '')
         sintomi_followup = followup_params.get('sintomi', '')
         data_followup = followup_params.get('date', '')
         cf_followup = followup_params.get('codice_fiscale', '')
 
-        if nome_followup:
-            if isinstance(nome_followup, list) and len(nome_followup) > 0:
-                globals.dati_paziente['nome'] = str(nome_followup[0]).title()
-            else:
-                globals.dati_paziente['nome'] = str(nome_followup).title()
-                
+        nome_followup_pulito = pulisci_nome(nome_followup)
+        if nome_followup_pulito:
+            globals.dati_paziente['nome'] = nome_followup_pulito
+
         if sintomi_followup:
             sintomi_uniti_f = ", ".join([str(s) for s in sintomi_followup]) if isinstance(sintomi_followup, list) else str(sintomi_followup)
             globals.dati_paziente['sintomi'] = sintomi_uniti_f.strip().rstrip(',')
-            
+
         if data_followup:
             if isinstance(data_followup, list) and len(data_followup) > 0:
                 globals.dati_paziente['data_nascita'] = str(data_followup[0])
             else:
                 globals.dati_paziente['data_nascita'] = str(data_followup)
-                
+
         if cf_followup:
             globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf_followup)
 
@@ -107,22 +113,20 @@ def process_dialogflow_webhook(req):
         data_nuovo = parameters.get('date', '')
         cf_nuovo = parameters.get('codice_fiscale', '')
 
-        if nome_nuovo:
-            if isinstance(nome_nuovo, list) and len(nome_nuovo) > 0:
-                globals.dati_paziente['nome'] = str(nome_nuovo[0]).title()
-            else:
-                globals.dati_paziente['nome'] = str(nome_nuovo).title()
-                
+        nome_nuovo_pulito = pulisci_nome(nome_nuovo)
+        if nome_nuovo_pulito:
+            globals.dati_paziente['nome'] = nome_nuovo_pulito
+
         if sintomi_nuovo:
             sintomi_uniti_n = ", ".join([str(s) for s in sintomi_nuovo]) if isinstance(sintomi_nuovo, list) else str(sintomi_nuovo)
             globals.dati_paziente['sintomi'] = sintomi_uniti_n.strip().rstrip(',')
-            
+
         if data_nuovo:
             if isinstance(data_nuovo, list) and len(data_nuovo) > 0:
                 globals.dati_paziente['data_nascita'] = str(data_nuovo[0])
             else:
                 globals.dati_paziente['data_nascita'] = str(data_nuovo)
-                
+
         if cf_nuovo:
             globals.dati_paziente['codice_fiscale'] = pulisci_cf(cf_nuovo)
 
@@ -143,18 +147,16 @@ def process_dialogflow_webhook(req):
 
     elif intent_name == 'RaccoltaDati - cancel':
         nome = followup_params.get('nome', '') or globals.dati_paziente.get('nome', 'paziente')
-        
-        if isinstance(nome, list) and len(nome) > 0:
-            nome = str(nome[0]).title()
-        elif isinstance(nome, str):
-            nome = nome.title()
-            
+
+        nome = pulisci_nome(nome) or 'paziente'
+
         print(f"[INFO] Cancellazione per: {nome}")
 
         globals.camera_active = True
         globals.captured_image_bytes = None
         globals.capture_requested = False
-        globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0}
+        globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
+        globals.paziente_salvato = False
         globals.dati_paziente = {
             "nome": "-", "data_nascita": "-", "sintomi": "-",
             "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"

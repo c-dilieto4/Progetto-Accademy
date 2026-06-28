@@ -599,11 +599,11 @@
     </style>
 
     <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
-    <df-messenger intent="WELCOME" chat-title="Triage" agent-id="52b7a76b-388d-40c7-8bcb-bd945bf45246"
-        language-code="it"></df-messenger>
 </head>
 
 <body>
+    <df-messenger id="dfMessenger" intent="WELCOME" chat-title="Triage"
+        agent-id="52b7a76b-388d-40c7-8bcb-bd945bf45246" language-code="it"></df-messenger>
 
     <div class="topbar">
         <h1>Pannello di Controllo &mdash; Triage</h1>
@@ -725,6 +725,26 @@
         const workflowCard = document.getElementById('workflowCard');
         const btnMic = document.getElementById('btnMic');
         const voiceLog = document.getElementById('voiceLog');
+        const dialogflowMessengerConfig = {
+            intent: "WELCOME",
+            chatTitle: "Triage",
+            agentId: "52b7a76b-388d-40c7-8bcb-bd945bf45246",
+            languageCode: "it"
+        };
+
+        function impostaBottoneSalvato() {
+            btnSalva.disabled = true;
+            btnSalva.innerText = "✅ Salvato";
+            btnSalva.style.background = "linear-gradient(135deg, #16a34a, #15803d)";
+            btnSalva.style.boxShadow = "0 4px 14px rgba(22,163,74,0.30)";
+        }
+
+        function impostaBottoneDaSalvare() {
+            btnSalva.disabled = false;
+            btnSalva.innerText = "💾 Salva nel DB";
+            btnSalva.style.background = "linear-gradient(135deg, var(--blue-600), var(--blue-700))";
+            btnSalva.style.boxShadow = "0 4px 14px rgba(37,99,235,0.30)";
+        }
 
         function scattaFoto() {
             btnAcquisisci.disabled = true;
@@ -742,6 +762,33 @@
             document.getElementById('confirmOverlay').classList.remove('show');
         }
 
+        function creaDialogflowMessenger(apriChat) {
+            const messenger = document.createElement('df-messenger');
+            messenger.id = "dfMessenger";
+            messenger.setAttribute('intent', dialogflowMessengerConfig.intent);
+            messenger.setAttribute('chat-title', dialogflowMessengerConfig.chatTitle);
+            messenger.setAttribute('agent-id', dialogflowMessengerConfig.agentId);
+            messenger.setAttribute('language-code', dialogflowMessengerConfig.languageCode);
+            messenger.setAttribute('session-id', `triage-${Date.now()}`);
+            if (apriChat) {
+                messenger.setAttribute('expand', '');
+            }
+            return messenger;
+        }
+
+        function resetDialogflowChat() {
+            const dfMessenger = document.querySelector('df-messenger');
+            if (dfMessenger && typeof dfMessenger.clearStorage === 'function') {
+                dfMessenger.clearStorage();
+            }
+
+            if (dfMessenger) {
+                dfMessenger.remove();
+            }
+
+            document.body.appendChild(creaDialogflowMessenger(true));
+        }
+
         function confermaReset() {
             chiudiConfirm();
 
@@ -749,10 +796,7 @@
             btnAcquisisci.classList.remove('btn-disabled');
             btnAcquisisci.innerText = "📸 Acquisisci Volto";
 
-            btnSalva.disabled = false;
-            btnSalva.innerText = "💾 Salva nel DB";
-            btnSalva.style.background = "linear-gradient(135deg, var(--blue-600), var(--blue-700))";
-            btnSalva.style.boxShadow = "0 4px 14px rgba(37,99,235,0.30)";
+            impostaBottoneDaSalvare();
 
             btnSalva.style.display = "none";
             boxCodiceAssegnato.style.display = "none";
@@ -760,10 +804,7 @@
 
             voiceLog.innerHTML = "🎤 Premi \"Parla con l'assistente\" in alto e parla per registrare i tuoi dati vocalmente.";
 
-            const dfMessenger = document.querySelector('df-messenger');
-            if (dfMessenger && typeof dfMessenger.clearStorage === 'function') {
-                dfMessenger.clearStorage();
-            }
+            resetDialogflowChat();
 
             fetch('/api/reset', { method: 'POST' });
         }
@@ -818,16 +859,31 @@
                 const sintomiInseriti = data.dialogflow.sintomi && data.dialogflow.sintomi !== "-";
                 const fotoAcquisita = data.webcam.pain_level && data.webcam.pain_level !== "-";
                 const cfInserito = data.dialogflow.codice_fiscale && data.dialogflow.codice_fiscale !== "-";
+                const datiCompleti = nomeInserito && dataInserita && sintomiInseriti && cfInserito;
+                const pazienteSalvato = data.salvato === true;
 
                 if (fotoAcquisita && btnAcquisisci.innerText === "⏳ Acquisizione e Ritaglio...") {
                     btnAcquisisci.innerText = "✅ Volto Acquisito";
                 }
 
-                if (codice !== "-" && fotoAcquisita && cfInserito) {
+                if (codice !== "-" && datiCompleti) {
                     txtCodice.innerText = codice;
                     boxCodiceAssegnato.style.display = "block";
                     btnSalva.style.display = "inline-block";
-                    txtIstruzione.innerHTML = "<strong>Codice generato correttamente!</strong> Verifica il riepilogo. Ora puoi procedere con il salvataggio o scartare la scheda con 'Nuovo Paziente'.";
+                    if (pazienteSalvato) {
+                        impostaBottoneSalvato();
+                        txtIstruzione.innerHTML = "<strong>Paziente gia' salvato nel database.</strong> Puoi consultare l'archivio o iniziare una nuova scheda con 'Nuovo Paziente'.";
+                    } else {
+                        impostaBottoneDaSalvare();
+                    }
+
+                    if (pazienteSalvato) {
+                        // Il testo e' gia' impostato sopra: il salvataggio e' lo stato prioritario.
+                    } else if (fotoAcquisita) {
+                        txtIstruzione.innerHTML = "<strong>Codice generato correttamente!</strong> Verifica il riepilogo. Ora puoi procedere con il salvataggio o scartare la scheda con 'Nuovo Paziente'.";
+                    } else {
+                        txtIstruzione.innerHTML = "<strong>Codice generato dai sintomi dichiarati.</strong> La foto non e' obbligatoria: puoi salvare nel DB oppure acquisire il volto se vuoi integrare anche l'analisi visiva.";
+                    }
 
                     if (codice === "ROSSO") {
                         boxCodiceAssegnato.style.background = "linear-gradient(135deg, #ef4444, #b91c1c)";
@@ -856,17 +912,15 @@
                     boxCodiceAssegnato.style.border = "none";
                     workflowCard.style.borderLeftColor = "var(--blue-600)";
 
-                    if (!fotoAcquisita) {
-                        txtIstruzione.innerHTML = "🎯 <strong>Step 1:</strong> Posiziona il paziente davanti alla telecamera e premi <strong>'Acquisisci Volto'</strong> per sbloccare l'algoritmo clinico.";
+                    if (!datiCompleti) {
+                        txtIstruzione.innerHTML = "💬 <strong>Step 1:</strong> Raccogli nome, data di nascita, codice fiscale e sintomi con l'assistente. La foto e' opzionale e puo' essere acquisita se disponibile.";
                         if (btnAcquisisci.innerText === "✅ Volto Acquisito") {
                             btnAcquisisci.disabled = false;
                             btnAcquisisci.classList.remove('btn-disabled');
                             btnAcquisisci.innerText = "📸 Acquisisci Volto";
                         }
-                    } else if (fotoAcquisita && (!nomeInserito || !dataInserita || !sintomiInseriti || !cfInserito)) {
-                        txtIstruzione.innerHTML = "💬 <strong>Step 2:</strong> Volto registrato! Procedi con l'assistente virtuale (chat o microfono in alto) per raccogliere anagrafica e sintomi.";
-                    } else if (fotoAcquisita && nomeInserito && dataInserita && sintomiInseriti && cfInserito) {
-                        txtIstruzione.innerHTML = "⏳ <strong>Step 3:</strong> Parametri pronti. Attendi la convalida o chiedi all'assistente di confermare il riepilogo per l'emissione del codice.";
+                    } else {
+                        txtIstruzione.innerHTML = "⏳ <strong>Step 2:</strong> Parametri pronti. Attendi la generazione del codice o chiedi all'assistente di confermare il riepilogo.";
                     }
                 }
             } catch (error) {
@@ -884,9 +938,7 @@
 
                 if (data.status === "ok") {
                     mostraModal(true, "Paziente salvato", `I dati sono stati archiviati correttamente. Codice assegnato: <strong>${data.codice}</strong>.`);
-                    btnSalva.innerText = "✅ Salvato";
-                    btnSalva.style.background = "linear-gradient(135deg, #16a34a, #15803d)";
-                    btnSalva.style.boxShadow = "0 4px 14px rgba(22,163,74,0.30)";
+                    impostaBottoneSalvato();
                 } else {
                     mostraModal(false, "Salvataggio non riuscito", data.message || "Si è verificato un errore durante il salvataggio.");
                     btnSalva.innerText = "💾 Salva nel DB";

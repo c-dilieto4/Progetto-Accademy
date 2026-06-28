@@ -12,3 +12,4 @@ camera_active = True
 capture_requested = False
 captured_image_bytes = None
 current_stream_bytes = None
+paziente_salvato = False

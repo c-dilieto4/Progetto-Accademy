@@ -34,8 +34,8 @@ def calcola_triage(sintomi, livello_dolore=None, face_detected=True, confidence=
     count_lievi = sum(1 for s in SINTOMI_LIEVI if s in sintomi_str)
 
     # Logica Fuzzy: Scala continua per i sintomi
-    peso_grave = 3.0
-    peso_medio = 1.5
+    peso_grave = 2.0
+    peso_medio = 1.0
     peso_lieve = 0.5
     
     score_sintomi = count_gravi * peso_grave + count_medi * peso_medio + count_lievi * peso_lieve
