@@ -2,31 +2,26 @@
 import psycopg2
 
 SINTOMI_GRAVI = [
-    'dolore al petto', 'dolore toracico', 'difficoltà respiratorie', 'difficoltà respiratoria',
-    'respiro affannoso', 'mancanza di respiro', 'perdita di coscienza', 'svenimento',
-    'paralisi', 'convulsioni', 'emorragia', 'sanguinamento abbondante', 'trauma cranico',
-    'forte emicrania improvvisa', 'dolore addominale acuto', 'difficoltà a parlare',
-    'intorpidimento improvviso', 'battito cardiaco irregolare', 'palpitazioni forti',
-    'frattura esposta', 'ustione grave', 'avvelenamento', 'shock anafilattico',
-    'visione confusa improvvisa', 'forte dolore al torace'
+    'dolore al petto', 'difficoltà respiratoria', 'mancanza di respiro',
+    'perdita di coscienza', 'svenimento', 'paralisi', 'convulsioni',
+    'emorragia', 'trauma cranico', 'difficoltà a parlare', 'avvelenamento',
+    'shock'
 ]
  
 SINTOMI_MEDI = [
-    'febbre', 'febbre alta', 'nausea', 'vomito', 'vertigini', 'capogiro',
-    'mal di stomaco', 'dolore addominale', 'diarrea', 'forte mal di testa',
-    'dolore lombare', 'mal di schiena', 'tosse persistente', 'tosse con sangue',
-    'gonfiore', 'edema', 'eruzione cutanea', 'orticaria', 'dolore articolare',
-    'dolore muscolare intenso', 'crampi', 'sangue dal naso',
-    'dolore alla gola', 'difficoltà a urinare', 'sudorazione eccessiva',
-    'brividi', 'spossatezza intensa', 'confusione mentale'
+    'febbre', 'nausea', 'vomito', 'vertigini', 'dolore addominale',
+    'diarrea', 'dolore lombare', 'mal di schiena', 'gonfiore',
+    'eruzione cutanea', 'dolore articolare', 'crampi', 'sangue dal naso',
+    'difficoltà a urinare', 'sudorazione', 'brividi', 'confusione',
+    'emicrania', 'intorpidimento', 'battito irregolare', 'palpitazioni',
+    'frattura', 'ustione', 'visione offuscata', 'tosse con sangue'
 ]
  
 SINTOMI_LIEVI = [
     'mal di testa', 'tosse', 'raffreddore', 'stanchezza', 'spossatezza',
-    'naso chiuso', 'mal di gola leggero', 'starnuti', 'prurito', 'lieve dolore muscolare',
-    'lieve mal di stomaco', 'insonnia', 'occhi arrossati', 'lacrimazione',
-    'sensazione di freddo', 'leggera nausea', 'inappetenza', 'tosse secca',
-    'irritazione cutanea', 'gonfiore lieve'
+    'naso chiuso', 'mal di gola', 'starnuti', 'prurito', 'dolore muscolare',
+    'mal di stomaco', 'insonnia', 'occhi arrossati', 'lacrimazione',
+    'sensazione di freddo', 'inappetenza', 'irritazione cutanea'
 ]
 
 def calcola_triage(sintomi, livello_dolore=None, face_detected=True, confidence=100.0):
