@@ -3,6 +3,13 @@ import globals
 from database import calcola_triage
 
 
+PUNTEGGIATURA_FINALE = ".,;:!?"
+
+
+def togli_punteggiatura_finale(valore):
+    return str(valore).strip().rstrip(PUNTEGGIATURA_FINALE).strip()
+
+
 def pulisci_cf(cf):
     if not cf:
         return ''
@@ -28,7 +35,18 @@ def pulisci_nome(nome):
     if isinstance(nome, list):
         nome = nome[0] if len(nome) > 0 else ''
 
-    return str(nome).strip().title()
+    return togli_punteggiatura_finale(nome).title()
+
+
+def pulisci_sintomi(sintomi):
+    if not sintomi:
+        return ''
+
+    if isinstance(sintomi, list):
+        sintomi = [togli_punteggiatura_finale(s) for s in sintomi if togli_punteggiatura_finale(s)]
+        return ", ".join(sintomi)
+
+    return togli_punteggiatura_finale(sintomi)
 
 
 def marca_dati_modificati():
@@ -64,8 +82,7 @@ def process_dialogflow_webhook(req):
             globals.dati_paziente['nome'] = nome_pulito
 
         if sintomi:
-            sintomi_uniti = ", ".join([str(s) for s in sintomi]) if isinstance(sintomi, list) else str(sintomi)
-            globals.dati_paziente['sintomi'] = sintomi_uniti.strip().rstrip(',')
+            globals.dati_paziente['sintomi'] = pulisci_sintomi(sintomi)
 
         if raw_data:
             if isinstance(raw_data, list) and len(raw_data) > 0:
@@ -96,8 +113,7 @@ def process_dialogflow_webhook(req):
             globals.dati_paziente['nome'] = nome_followup_pulito
 
         if sintomi_followup:
-            sintomi_uniti_f = ", ".join([str(s) for s in sintomi_followup]) if isinstance(sintomi_followup, list) else str(sintomi_followup)
-            globals.dati_paziente['sintomi'] = sintomi_uniti_f.strip().rstrip(',')
+            globals.dati_paziente['sintomi'] = pulisci_sintomi(sintomi_followup)
 
         if data_followup:
             if isinstance(data_followup, list) and len(data_followup) > 0:
@@ -118,8 +134,7 @@ def process_dialogflow_webhook(req):
             globals.dati_paziente['nome'] = nome_nuovo_pulito
 
         if sintomi_nuovo:
-            sintomi_uniti_n = ", ".join([str(s) for s in sintomi_nuovo]) if isinstance(sintomi_nuovo, list) else str(sintomi_nuovo)
-            globals.dati_paziente['sintomi'] = sintomi_uniti_n.strip().rstrip(',')
+            globals.dati_paziente['sintomi'] = pulisci_sintomi(sintomi_nuovo)
 
         if data_nuovo:
             if isinstance(data_nuovo, list) and len(data_nuovo) > 0:

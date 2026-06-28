@@ -46,22 +46,68 @@
                 radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.05), transparent 40%);
             margin: 0;
             padding: 28px;
+            min-height: 100vh;
             color: var(--ink-900);
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
             display: flex;
             gap: 22px;
             max-width: 1200px;
-            margin: auto;
+            width: 100%;
+            margin: 0 auto;
             flex-direction: column;
+            flex: 1 1 auto;
+            min-height: 0;
         }
 
         .main-row {
-            display: flex;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
             gap: 22px;
             width: 100%;
-            align-items: flex-start;
+            align-items: stretch;
+            flex: 1 1 auto;
+            min-height: 560px;
+        }
+
+        .left-column,
+        .chat-column {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            min-width: 0;
+        }
+
+        .left-column {
+            gap: 22px;
+        }
+
+        .vision-card {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .chat-column {
+            flex: 1 1 auto;
+        }
+
+        .patient-card {
+            flex: 0 0 auto;
+        }
+
+        .patient-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .patient-details .data-row {
+            min-height: 31px;
         }
 
         .card {
@@ -70,7 +116,6 @@
             padding: 24px;
             box-shadow: var(--shadow-md);
             border: 1px solid var(--line);
-            flex: 1;
             transition: box-shadow 0.25s ease;
         }
 
@@ -101,6 +146,59 @@
             flex-shrink: 0;
         }
 
+        .card-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid var(--line);
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .card-header-row h2 {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin: 0;
+        }
+
+        .camera-picker {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            max-width: 100%;
+            flex-shrink: 0;
+        }
+
+        .camera-select {
+            width: 178px;
+            max-width: min(178px, calc(100vw - 180px));
+            height: 34px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: var(--surface);
+            color: var(--ink-600);
+            font-family: inherit;
+            font-size: 0.78em;
+            font-weight: 600;
+            padding: 0 30px 0 10px;
+            outline: none;
+            white-space: nowrap;
+        }
+
+        .camera-refresh {
+            width: 34px;
+            height: 34px;
+            padding: 0;
+            border-radius: 8px;
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+            box-shadow: var(--shadow-sm);
+            font-size: 0.95em;
+        }
+
         .data-row {
             display: flex;
             justify-content: space-between;
@@ -127,7 +225,8 @@
 
         .video-container {
             width: 100%;
-            height: 350px;
+            flex: 1 1 auto;
+            min-height: 300px;
             background: linear-gradient(160deg, #0c1424, #1a2740);
             border-radius: 12px;
             overflow: hidden;
@@ -209,22 +308,6 @@
             box-shadow: none !important;
         }
 
-        .btn-mic {
-            background: linear-gradient(135deg, var(--blue-700), var(--blue-900));
-            font-size: 0.88em;
-            padding: 11px 18px;
-            box-shadow: 0 4px 14px rgba(15, 37, 87, 0.30);
-        }
-
-        .btn-mic:hover {
-            box-shadow: 0 8px 20px rgba(15, 37, 87, 0.40);
-        }
-
-        .btn-mic.recording {
-            background: linear-gradient(135deg, var(--red), #991b1b);
-            animation: pulseMic 1.4s infinite;
-        }
-
         @keyframes pulseMic {
             0% {
                 box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.45);
@@ -239,28 +322,6 @@
             }
         }
 
-        .voice-log {
-            margin-top: 14px;
-            font-size: 0.92em;
-            color: var(--ink-600);
-            background: var(--blue-50);
-            border: 1px solid var(--blue-100);
-            border-radius: 10px;
-            padding: 12px 14px;
-            min-height: 40px;
-            line-height: 1.5;
-        }
-
-        .voice-log .utente {
-            color: var(--blue-700);
-            font-weight: 700;
-        }
-
-        .voice-log .bot {
-            color: var(--green);
-            font-weight: 700;
-        }
-
         .instruction-box {
             background: var(--surface);
             border: 1px solid var(--line);
@@ -268,8 +329,13 @@
             border-radius: 14px;
             padding: 20px;
             box-shadow: var(--shadow-md);
-            margin-top: 22px;
             transition: border-left-color 0.3s ease;
+        }
+
+        .workflow-full {
+            width: 100%;
+            margin: 0;
+            flex: 0 0 auto;
         }
 
         .instruction-box h3 {
@@ -312,8 +378,8 @@
         }
 
         .topbar {
-            display: flex;
-            justify-content: space-between;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
             max-width: 1200px;
             margin: 0 auto 24px auto;
@@ -332,6 +398,7 @@
             align-items: center;
             gap: 10px;
             flex-shrink: 0;
+            justify-self: start;
         }
 
         .topbar h1::before {
@@ -347,11 +414,11 @@
            INSEGNA "HOSPITALBOT" - effetto luminoso stile ospedale
            =========================================================== */
         .hospital-sign {
-            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             min-width: 0;
+            justify-self: center;
         }
 
         .hospital-sign-box {
@@ -444,6 +511,7 @@
             align-items: center;
             gap: 10px;
             flex-shrink: 0;
+            justify-self: end;
         }
 
         .badge-medico {
@@ -596,17 +664,165 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.40);
         }
-    </style>
 
-    <script src="https://www.gstatic.com/dialogflow-console/fast/messenger/bootstrap.js?v=1"></script>
+        .triage-chat {
+            width: 100%;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            display: flex;
+            flex: 1 1 auto;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .triage-chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            color: #ffffff;
+            font-weight: 700;
+        }
+
+        .triage-chat-status {
+            min-width: 70px;
+            text-align: right;
+            color: rgba(255, 255, 255, 0.82);
+            font-size: 0.78em;
+            font-weight: 600;
+        }
+
+        .chat-messages {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: #f8fbff;
+        }
+
+        .chat-message {
+            max-width: 84%;
+            padding: 10px 12px;
+            border-radius: 14px;
+            font-size: 0.9em;
+            line-height: 1.35;
+            word-break: break-word;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chat-message.bot {
+            align-self: flex-start;
+            background: var(--blue-100);
+            color: var(--ink-900);
+            border-bottom-left-radius: 5px;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: #e5e7eb;
+            color: #020617;
+            border-bottom-right-radius: 5px;
+        }
+
+        .chat-input-row {
+            display: grid;
+            grid-template-columns: 42px minmax(0, 1fr) 42px;
+            gap: 8px;
+            padding: 10px;
+            border-top: 1px solid var(--line);
+            background: var(--surface);
+        }
+
+        .chat-input {
+            width: 100%;
+            min-width: 0;
+            height: 42px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0 12px;
+            color: var(--ink-900);
+            font-family: inherit;
+            font-size: 0.93em;
+            outline: none;
+        }
+
+        .chat-input:focus {
+            border-color: var(--blue-500);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.14);
+        }
+
+        .chat-icon-btn {
+            width: 42px;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--blue-600), var(--blue-700));
+            box-shadow: var(--shadow-sm);
+            font-size: 1em;
+        }
+
+        .chat-icon-btn.secondary {
+            background: var(--blue-50);
+            color: var(--blue-700);
+            border: 1px solid var(--blue-100);
+        }
+
+        .chat-icon-btn.recording {
+            background: linear-gradient(135deg, var(--red), #991b1b);
+            color: #ffffff;
+            animation: pulseMic 1.4s infinite;
+        }
+
+        @media (max-width: 980px) {
+            body {
+                padding: 18px 14px;
+            }
+
+            .topbar {
+                grid-template-columns: 1fr;
+                justify-items: center;
+                text-align: center;
+            }
+
+            .topbar h1,
+            .hospital-sign,
+            .topbar-actions {
+                justify-self: center;
+            }
+
+            .main-row {
+                grid-template-columns: 1fr;
+                height: auto;
+                min-height: 0;
+            }
+
+            .left-column,
+            .chat-column {
+                min-height: 0;
+            }
+
+            .triage-chat {
+                flex: 0 0 auto;
+                height: 420px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <df-messenger id="dfMessenger" intent="WELCOME" chat-title="Triage"
-        agent-id="52b7a76b-388d-40c7-8bcb-bd945bf45246" language-code="it"></df-messenger>
-
     <div class="topbar">
-        <h1>Pannello di Controllo &mdash; Triage</h1>
+        <h1>Triage</h1>
 
         <div class="hospital-sign">
             <div class="hospital-sign-box">
@@ -616,7 +832,6 @@
         </div>
 
         <div class="topbar-actions">
-            <button id="btnMic" class="btn-mic" onclick="toggleMicrofono()">🎤 Parla con l'assistente</button>
             {% if session.get('utente') %}
             <span class="badge-medico">👋 Dr. {{ session.get('nome') }}</span>
             <a href="/pazienti" class="link-btn link-archivio">📂 Archivio</a>
@@ -627,65 +842,89 @@
         </div>
     </div>
 
-    <div style="max-width: 1200px; margin: 0 auto 22px auto; box-sizing: border-box;">
-        <div class="voice-log" id="voiceLog">🎤 Premi "Parla con l'assistente" in alto e parla per registrare i tuoi
-            dati vocalmente.</div>
-    </div>
-
     <div class="container">
         <div class="main-row">
 
-            <div class="card">
-                <h2>Visione Computerizzata</h2>
-                <div class="video-container">
-                    <img id="videoLive" src="/video_feed" style="width: 100%; height: 100%; object-fit: contain;">
+            <div class="left-column">
+                <div class="card vision-card">
+                    <div class="card-header-row">
+                        <h2>Visione Computerizzata</h2>
+                        <div class="camera-picker">
+                            <select id="cameraSelect" class="camera-select" title="Seleziona stream video">
+                                <option value="">Stream...</option>
+                            </select>
+                            <button id="btnRefreshCameras" class="camera-refresh" type="button"
+                                title="Aggiorna stream video" aria-label="Aggiorna stream video">↻</button>
+                        </div>
+                    </div>
+                    <div class="video-container">
+                        <img id="videoLive" src="/video_feed" style="width: 100%; height: 100%; object-fit: contain;">
+                    </div>
+
+                    <div class="btn-group">
+                        <button id="btnAcquisisci" class="btn-acquisisci" onclick="scattaFoto()">📸 Acquisisci
+                            Volto</button>
+                        <button id="btnReset" class="btn-reset" onclick="resetPaziente()">👤 Nuovo Paziente</button>
+                    </div>
+
+                    <div class="data-row"
+                        style="margin-top: 15px; font-size: 0.9em; color: var(--ink-400); border-bottom: none;">
+                        Confidenza IA: <span id="val_confidenza_cam"
+                            style="color: var(--ink-900); font-weight: 700;">0</span>%
+                    </div>
                 </div>
 
-                <div class="btn-group">
-                    <button id="btnAcquisisci" class="btn-acquisisci" onclick="scattaFoto()">📸 Acquisisci
-                        Volto</button>
-                    <button id="btnReset" class="btn-reset" onclick="resetPaziente()">👤 Nuovo Paziente</button>
-                </div>
-
-                <div class="data-row"
-                    style="margin-top: 15px; font-size: 0.9em; color: var(--ink-400); border-bottom: none;">
-                    Confidenza IA: <span id="val_confidenza_cam"
-                        style="color: var(--ink-900); font-weight: 700;">0</span>%
+                <div class="card patient-card">
+                    <h2>Dati Paziente</h2>
+                    <div class="patient-details">
+                        <div class="data-row"><span class="label">Nome e Cognome:</span> <span id="df_nome"
+                                style="text-transform: capitalize;">-</span></div>
+                        <div class="data-row"><span class="label">Data di Nascita:</span> <span
+                                id="df_data_nascita">-</span></div>
+                        <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span>
+                        </div>
+                        <div class="data-row"><span class="label">Codice Fiscale:</span> <span id="df_cf">-</span></div>
+                        <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam"
+                                style="font-weight: bold;">-</span></div>
+                    </div>
                 </div>
             </div>
 
-            <div style="flex: 1; display: flex; flex-direction: column;">
-
-                <div class="card">
-                    <h2>Dati Paziente</h2>
-                    <div class="data-row"><span class="label">Nome e Cognome:</span> <span id="df_nome"
-                            style="text-transform: capitalize;">-</span></div>
-                    <div class="data-row"><span class="label">Data di Nascita:</span> <span
-                            id="df_data_nascita">-</span></div>
-                    <div class="data-row"><span class="label">Sintomi Dichiarati:</span> <span id="df_sintomi">-</span>
+            <div class="chat-column">
+                <div class="triage-chat" id="triageChat">
+                    <div class="triage-chat-header">
+                        <span>Triage</span>
+                        <span class="triage-chat-status" id="chatStatus">Pronto</span>
                     </div>
-                    <div class="data-row"><span class="label">Codice Fiscale:</span> <span id="df_cf">-</span></div>
-                    <div class="data-row"><span class="label">Livello di Dolore:</span> <span id="val_dolore_cam"
-                            style="font-weight: bold;">-</span></div>
-                </div>
-
-                <div class="instruction-box" id="workflowCard">
-                    <h3>📋 Avanzamento Operazioni</h3>
-                    <div id="txtIstruzione"
-                        style="font-size: 1em; color: var(--ink-600); line-height: 1.45; min-height: 60px;">
-                        Inizializzazione del flusso guida...
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message bot">Benvenuto al pronto soccorso! Puoi scrivere o dettare i tuoi dati.</div>
                     </div>
-
-                    <div id="boxCodiceAssegnato" class="code-rect">
-                        CODICE: <span id="txtCodice">-</span>
-                    </div>
-
-                    <div class="btn-group" style="margin-top: 14px; justify-content: flex-end;">
-                        <button id="btnSalva" class="btn-salva" onclick="salvaPaziente()" style="display: none;">💾
-                            Salva nel DB</button>
+                    <div class="chat-input-row">
+                        <button id="btnChatMic" class="chat-icon-btn secondary" type="button" title="Detta messaggio"
+                            aria-label="Detta messaggio">🎤</button>
+                        <input id="chatInput" class="chat-input" type="text" autocomplete="off"
+                            placeholder="Scrivi o detta una risposta...">
+                        <button id="btnChatSend" class="chat-icon-btn" type="button" title="Invia"
+                            aria-label="Invia messaggio">➤</button>
                     </div>
                 </div>
+            </div>
+        </div>
 
+        <div class="instruction-box workflow-full" id="workflowCard">
+            <h3>📋 Avanzamento Operazioni</h3>
+            <div id="txtIstruzione"
+                style="font-size: 1em; color: var(--ink-600); line-height: 1.45; min-height: 60px;">
+                Inizializzazione del flusso guida...
+            </div>
+
+            <div id="boxCodiceAssegnato" class="code-rect">
+                CODICE: <span id="txtCodice">-</span>
+            </div>
+
+            <div class="btn-group" style="margin-top: 14px; justify-content: flex-end;">
+                <button id="btnSalva" class="btn-salva" onclick="salvaPaziente()" style="display: none;">💾
+                    Salva nel DB</button>
             </div>
         </div>
     </div>
@@ -723,14 +962,14 @@
         const btnReset = document.getElementById('btnReset');
         const btnSalva = document.getElementById('btnSalva');
         const workflowCard = document.getElementById('workflowCard');
-        const btnMic = document.getElementById('btnMic');
-        const voiceLog = document.getElementById('voiceLog');
-        const dialogflowMessengerConfig = {
-            intent: "WELCOME",
-            chatTitle: "Triage",
-            agentId: "52b7a76b-388d-40c7-8bcb-bd945bf45246",
-            languageCode: "it"
-        };
+        const videoLive = document.getElementById('videoLive');
+        const cameraSelect = document.getElementById('cameraSelect');
+        const btnRefreshCameras = document.getElementById('btnRefreshCameras');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const btnChatMic = document.getElementById('btnChatMic');
+        const btnChatSend = document.getElementById('btnChatSend');
+        const chatStatus = document.getElementById('chatStatus');
 
         function impostaBottoneSalvato() {
             btnSalva.disabled = true;
@@ -746,12 +985,95 @@
             btnSalva.style.boxShadow = "0 4px 14px rgba(37,99,235,0.30)";
         }
 
-        function scattaFoto() {
+        async function scattaFoto() {
             btnAcquisisci.disabled = true;
             btnAcquisisci.classList.add('btn-disabled');
             btnAcquisisci.innerText = "⏳ Acquisizione e Ritaglio...";
 
-            fetch('/api/acquisisci', { method: 'POST' });
+            try {
+                const response = await fetch('/api/acquisisci', { method: 'POST' });
+                if (!response.ok) {
+                    throw new Error("Richiesta acquisizione non riuscita");
+                }
+            } catch (error) {
+                console.error("Errore acquisizione volto:", error);
+                btnAcquisisci.disabled = false;
+                btnAcquisisci.classList.remove('btn-disabled');
+                btnAcquisisci.innerText = "📸 Acquisisci Volto";
+            }
+        }
+
+        async function caricaCamere(forzaScan = false) {
+            try {
+                cameraSelect.disabled = true;
+                btnRefreshCameras.disabled = true;
+
+                const url = forzaScan ? '/api/camere?scan=1' : '/api/camere';
+                const response = await fetch(url, { cache: 'no-store' });
+                const data = await response.json();
+                const camere = data.camere || [];
+
+                cameraSelect.innerHTML = "";
+                if (camere.length === 0) {
+                    const option = document.createElement('option');
+                    option.value = "";
+                    option.innerText = "Nessuna camera";
+                    cameraSelect.appendChild(option);
+                    cameraSelect.title = data.error || "Nessuna camera trovata";
+                    return;
+                }
+
+                camere.forEach((camera) => {
+                    const option = document.createElement('option');
+                    option.value = camera.index;
+                    const risoluzione = camera.width && camera.height ? ` (${camera.width}x${camera.height})` : "";
+                    option.innerText = `${camera.label}${risoluzione}`;
+                    cameraSelect.appendChild(option);
+                });
+
+                if (data.attiva !== null && data.attiva !== undefined) {
+                    cameraSelect.value = String(data.attiva);
+                }
+                cameraSelect.title = data.status || "Seleziona stream video";
+                cameraSelect.disabled = false;
+            } catch (error) {
+                console.error("Errore caricamento camere:", error);
+                cameraSelect.innerHTML = '<option value="">Errore camera</option>';
+                cameraSelect.title = "Impossibile leggere le camere disponibili";
+            } finally {
+                btnRefreshCameras.disabled = false;
+            }
+        }
+
+        async function selezionaCamera() {
+            const indice = cameraSelect.value;
+            if (indice === "") {
+                return;
+            }
+
+            cameraSelect.disabled = true;
+            try {
+                const response = await fetch('/api/camera', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ index: indice })
+                });
+                const data = await response.json();
+                if (data.status !== "ok") {
+                    throw new Error(data.message || "Errore cambio camera");
+                }
+
+                btnAcquisisci.disabled = false;
+                btnAcquisisci.classList.remove('btn-disabled');
+                btnAcquisisci.innerText = "📸 Acquisisci Volto";
+                videoLive.src = `/video_feed?camera=${indice}&t=${Date.now()}`;
+                setTimeout(() => caricaCamere(false), 500);
+            } catch (error) {
+                console.error("Errore selezione camera:", error);
+                await caricaCamere(false);
+            } finally {
+                cameraSelect.disabled = false;
+            }
         }
 
         function resetPaziente() {
@@ -762,31 +1084,48 @@
             document.getElementById('confirmOverlay').classList.remove('show');
         }
 
-        function creaDialogflowMessenger(apriChat) {
-            const messenger = document.createElement('df-messenger');
-            messenger.id = "dfMessenger";
-            messenger.setAttribute('intent', dialogflowMessengerConfig.intent);
-            messenger.setAttribute('chat-title', dialogflowMessengerConfig.chatTitle);
-            messenger.setAttribute('agent-id', dialogflowMessengerConfig.agentId);
-            messenger.setAttribute('language-code', dialogflowMessengerConfig.languageCode);
-            messenger.setAttribute('session-id', `triage-${Date.now()}`);
-            if (apriChat) {
-                messenger.setAttribute('expand', '');
-            }
-            return messenger;
+        function escapeHtml(testo) {
+            const div = document.createElement('div');
+            div.innerText = testo;
+            return div.innerHTML;
         }
 
-        function resetDialogflowChat() {
-            const dfMessenger = document.querySelector('df-messenger');
-            if (dfMessenger && typeof dfMessenger.clearStorage === 'function') {
-                dfMessenger.clearStorage();
+        function aggiungiMessaggioChat(tipo, testo) {
+            const messaggio = document.createElement('div');
+            messaggio.className = `chat-message ${tipo}`;
+            messaggio.innerHTML = escapeHtml(testo || '');
+            chatMessages.appendChild(messaggio);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function impostaStatoChat(testo) {
+            chatStatus.innerText = testo || "Pronto";
+        }
+
+        function resetChat() {
+            chatMessages.innerHTML = "";
+            aggiungiMessaggioChat("bot", "Benvenuto al pronto soccorso! Puoi scrivere o dettare i tuoi dati.");
+            chatInput.value = "";
+            impostaStatoChat("Pronto");
+            if (recognition && registrando) {
+                recognition.stop();
+            }
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+            socket.emit('chat_reset');
+        }
+
+        function inviaMessaggioChat(testo, origine) {
+            const testoPulito = (testo || '').trim();
+            if (!testoPulito) {
+                return;
             }
 
-            if (dfMessenger) {
-                dfMessenger.remove();
-            }
-
-            document.body.appendChild(creaDialogflowMessenger(true));
+            aggiungiMessaggioChat("user", testoPulito);
+            chatInput.value = "";
+            impostaStatoChat("Invio...");
+            socket.emit('voice_text', { testo: testoPulito, origine: origine || 'text' });
         }
 
         function confermaReset() {
@@ -802,9 +1141,7 @@
             boxCodiceAssegnato.style.display = "none";
             workflowCard.style.borderLeftColor = "var(--blue-600)";
 
-            voiceLog.innerHTML = "🎤 Premi \"Parla con l'assistente\" in alto e parla per registrare i tuoi dati vocalmente.";
-
-            resetDialogflowChat();
+            resetChat();
 
             fetch('/api/reset', { method: 'POST' });
         }
@@ -861,9 +1198,13 @@
                 const cfInserito = data.dialogflow.codice_fiscale && data.dialogflow.codice_fiscale !== "-";
                 const datiCompleti = nomeInserito && dataInserita && sintomiInseriti && cfInserito;
                 const pazienteSalvato = data.salvato === true;
+                const acquisizioneInCorso = data.camera && data.camera.capture_in_progress === true;
+                const bottoneInAcquisizione = btnAcquisisci.innerText.includes("Acquisizione");
 
-                if (fotoAcquisita && btnAcquisisci.innerText === "⏳ Acquisizione e Ritaglio...") {
-                    btnAcquisisci.innerText = "✅ Volto Acquisito";
+                if (bottoneInAcquisizione && !acquisizioneInCorso) {
+                    btnAcquisisci.disabled = false;
+                    btnAcquisisci.classList.remove('btn-disabled');
+                    btnAcquisisci.innerText = fotoAcquisita ? "📸 Riacquisisci Volto" : "📸 Acquisisci Volto";
                 }
 
                 if (codice !== "-" && datiCompleti) {
@@ -914,10 +1255,10 @@
 
                     if (!datiCompleti) {
                         txtIstruzione.innerHTML = "💬 <strong>Step 1:</strong> Raccogli nome, data di nascita, codice fiscale e sintomi con l'assistente. La foto e' opzionale e puo' essere acquisita se disponibile.";
-                        if (btnAcquisisci.innerText === "✅ Volto Acquisito") {
+                        if (!acquisizioneInCorso) {
                             btnAcquisisci.disabled = false;
                             btnAcquisisci.classList.remove('btn-disabled');
-                            btnAcquisisci.innerText = "📸 Acquisisci Volto";
+                            btnAcquisisci.innerText = fotoAcquisita ? "📸 Riacquisisci Volto" : "📸 Acquisisci Volto";
                         }
                     } else {
                         txtIstruzione.innerHTML = "⏳ <strong>Step 2:</strong> Parametri pronti. Attendi la generazione del codice o chiedi all'assistente di confermare il riepilogo.";
@@ -969,7 +1310,7 @@
         setInterval(aggiornaDati, 1000);
 
         // ================================================================
-        // CHATBOT VOCALE - Riconoscimento (Web Speech API) + WebSocket + sintesi
+        // CHAT UNIFICATA - Testo + Web Speech API + WebSocket
         // ================================================================
 
         const socket = io();
@@ -980,12 +1321,15 @@
             console.log('[VOICE] Connesso al server WebSocket');
         });
 
-        socket.on('voice_response', (data) => {
-            voiceLog.innerHTML =
-                (data.testo_utente ? `<span class="utente">Tu:</span> ${data.testo_utente}<br>` : '') +
-                `<span class="bot">Assistente:</span> ${data.risposta_testo}`;
+        socket.on('chat_reset_done', () => {
+            console.log('[CHAT] Sessione Dialogflow resettata');
+        });
 
-            if (data.risposta_testo && 'speechSynthesis' in window) {
+        socket.on('voice_response', (data) => {
+            impostaStatoChat("Pronto");
+            aggiungiMessaggioChat("bot", data.risposta_testo || "Non ho ricevuto una risposta.");
+
+            if (data.origine === 'voice' && data.risposta_testo && 'speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(data.risposta_testo);
                 utterance.lang = 'it-IT';
@@ -993,11 +1337,30 @@
             }
         });
 
+        btnChatSend.addEventListener('click', () => {
+            inviaMessaggioChat(chatInput.value, 'text');
+        });
+
+        chatInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                inviaMessaggioChat(chatInput.value, 'text');
+            }
+        });
+
+        btnChatMic.addEventListener('click', () => {
+            toggleMicrofono();
+        });
+
+        cameraSelect.addEventListener('change', selezionaCamera);
+        btnRefreshCameras.addEventListener('click', () => caricaCamere(true));
+        caricaCamere(false);
+
         function toggleMicrofono() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
             if (!SpeechRecognition) {
-                voiceLog.innerHTML = "❌ Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.";
+                aggiungiMessaggioChat("bot", "Il tuo browser non supporta il riconoscimento vocale. Usa Chrome o Edge.");
                 return;
             }
 
@@ -1009,26 +1372,29 @@
 
                 recognition.onstart = () => {
                     registrando = true;
-                    btnMic.classList.add('recording');
-                    btnMic.innerText = "🔴 Sto ascoltando... (parla ora)";
-                    voiceLog.innerHTML = "🎤 In ascolto...";
+                    btnChatMic.classList.add('recording');
+                    btnChatMic.innerText = "■";
+                    impostaStatoChat("Ascolto...");
                 };
 
                 recognition.onresult = (event) => {
                     const testoRiconosciuto = event.results[0][0].transcript;
-                    voiceLog.innerHTML = `<span class="utente">Tu:</span> ${testoRiconosciuto}<br>⏳ Elaborazione...`;
-                    socket.emit('voice_text', { testo: testoRiconosciuto });
+                    inviaMessaggioChat(testoRiconosciuto, 'voice');
                 };
 
                 recognition.onerror = (event) => {
                     console.error("Errore riconoscimento vocale:", event.error);
-                    voiceLog.innerHTML = "❌ Errore nel riconoscimento vocale: " + event.error;
+                    impostaStatoChat("Pronto");
+                    aggiungiMessaggioChat("bot", "Errore nel riconoscimento vocale: " + event.error);
                 };
 
                 recognition.onend = () => {
                     registrando = false;
-                    btnMic.classList.remove('recording');
-                    btnMic.innerText = "🎤 Parla con l'assistente";
+                    btnChatMic.classList.remove('recording');
+                    btnChatMic.innerText = "🎤";
+                    if (chatStatus.innerText === "Ascolto...") {
+                        impostaStatoChat("Pronto");
+                    }
                 };
 
                 recognition.start();

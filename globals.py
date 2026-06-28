@@ -10,6 +10,14 @@ dati_paziente = {
 
 camera_active = True
 capture_requested = False
+capture_in_progress = False
+last_capture_error = ""
 captured_image_bytes = None
 current_stream_bytes = None
+stream_frame_id = 0
+camera_index = None
+camera_width = None
+camera_height = None
+camera_status = "Ricerca webcam..."
+camera_error = ""
 paziente_salvato = False

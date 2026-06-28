@@ -9,7 +9,7 @@ from flask import Flask, request, jsonify, render_template, Response, session, r
 from flask_socketio import SocketIO, emit
 from werkzeug.security import generate_password_hash, check_password_hash
 import globals
-from camera import camera_worker, stream_to_browser
+from camera import camera_worker, stream_to_browser, lista_camere
 from webhook import process_dialogflow_webhook
 from database import salva_paziente_db, get_user, user_exists, email_exists, register_user, get_all_pazienti, calcola_triage
 from voice_bot import invia_testo_a_dialogflow, chiudi_sessione
@@ -126,7 +126,11 @@ def dashboard():
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(stream_to_browser(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    response = Response(stream_to_browser(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['X-Accel-Buffering'] = 'no'
+    return response
 
 @app.route('/webhook', methods=['POST'])
 def dialogflow_webhook():
@@ -136,13 +140,51 @@ def dialogflow_webhook():
 @app.route('/api/acquisisci', methods=['POST'])
 def acquisisci():
     globals.capture_requested = True
+    globals.capture_in_progress = True
+    globals.last_capture_error = ""
     return jsonify({"status": "ok"})
+
+@app.route('/api/camere', methods=['GET'])
+def elenco_camere():
+    forza_scan = request.args.get("scan") == "1"
+    return jsonify({
+        "camere": lista_camere(forza_scan=forza_scan),
+        "attiva": globals.camera_index,
+        "status": globals.camera_status,
+        "error": globals.camera_error
+    })
+
+@app.route('/api/camera', methods=['POST'])
+def seleziona_camera():
+    data = request.get_json(silent=True) or {}
+
+    try:
+        indice = int(data.get('index'))
+    except (TypeError, ValueError):
+        return jsonify({"status": "error", "message": "Indice camera non valido."}), 400
+
+    if indice < 0 or indice > 20:
+        return jsonify({"status": "error", "message": "Indice camera fuori intervallo."}), 400
+
+    globals.camera_index = indice
+    globals.camera_active = True
+    globals.capture_requested = False
+    globals.capture_in_progress = False
+    globals.last_capture_error = ""
+    globals.captured_image_bytes = None
+    globals.current_stream_bytes = None
+    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
+    globals.camera_status = f"Apertura camera {indice}..."
+    globals.camera_error = ""
+    return jsonify({"status": "ok", "index": indice})
 
 @app.route('/api/reset', methods=['POST'])
 def reset_triage():
     globals.camera_active = True
     globals.captured_image_bytes = None
     globals.capture_requested = False
+    globals.capture_in_progress = False
+    globals.last_capture_error = ""
     globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
     globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"}
     globals.paziente_salvato = False
@@ -168,6 +210,13 @@ def stato_triage():
     response = jsonify({
         "webcam": globals.ultimo_dato_dolore,
         "dialogflow": globals.dati_paziente,
+        "camera": {
+            "status": globals.camera_status,
+            "error": globals.camera_error,
+            "capture_in_progress": globals.capture_in_progress,
+            "last_capture_error": globals.last_capture_error,
+            "stream_frame_id": globals.stream_frame_id
+        },
         "salvato": globals.paziente_salvato
     })
     response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -231,6 +280,14 @@ def handle_disconnect():
     chiudi_sessione(sid)
 
 
+@socketio.on('chat_reset')
+def handle_chat_reset():
+    sid = socket_sid()
+    print(f"[VOICE] Reset sessione Dialogflow: {sid}")
+    chiudi_sessione(sid)
+    emit('chat_reset_done', {'status': 'ok'})
+
+
 @socketio.on('voice_text')
 def handle_voice_text(data):
     """
@@ -239,12 +296,14 @@ def handle_voice_text(data):
     """
     try:
         testo_utente = data.get('testo', '').strip()
+        origine = data.get('origine', 'voice')
         print(f"[VOICE] Utente ha detto: {testo_utente}")
 
         if not testo_utente:
             emit('voice_response', {
                 'testo_utente': '',
-                'risposta_testo': 'Non ho sentito nulla, riprova.'
+                'risposta_testo': 'Non ho sentito nulla, riprova.',
+                'origine': origine
             })
             return
 
@@ -253,14 +312,16 @@ def handle_voice_text(data):
 
         emit('voice_response', {
             'testo_utente': testo_utente,
-            'risposta_testo': risposta_testo
+            'risposta_testo': risposta_testo,
+            'origine': origine
         })
 
     except Exception as e:
         print(f"[ERRORE VOICE] {e}")
         emit('voice_response', {
             'testo_utente': '',
-            'risposta_testo': 'Errore nella comunicazione con Dialogflow.'
+            'risposta_testo': 'Errore nella comunicazione con Dialogflow.',
+            'origine': data.get('origine', 'voice') if isinstance(data, dict) else 'voice'
         })
 
 
