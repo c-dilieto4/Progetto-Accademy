@@ -29,8 +29,6 @@ def crea_capture(indice):
 
 
 def indici_camera(indice_preferito=None):
-    indici = []
-
     if indice_preferito is not None:
         return [indice_preferito]
 
@@ -41,7 +39,7 @@ def indici_camera(indice_preferito=None):
         except ValueError:
             print(f"[WARN] CAMERA_INDEX non valido: {indice_env}")
 
-    return [DEFAULT_CAMERA_INDEX]
+    return list(range(MAX_CAMERA_INDEX))
 
 
 def prova_camera(indice):
