@@ -6,7 +6,7 @@
 
 DESCRIZIONE
 -----------
-HospitalBot e' un sistema di supporto decisionale al triage del pronto
+HospitalBot è un sistema di supporto decisionale al triage del pronto
 soccorso che integra:
 - NLP tramite Google Dialogflow (raccolta dati anagrafici e sintomi,
   sia in chat testuale che vocale)
@@ -89,7 +89,7 @@ Dialogflow durante le sessioni vocali via WebSocket.
 9. Posizionare il file service_account.json nella stessa cartella
    di app.py
 
-Nota: il Project ID dell'agente e' configurato direttamente nel
+Nota: il Project ID dell'agente è configurato direttamente nel
 file voice_bot.py (variabile PROJECT_ID).
 
 =============================================================
@@ -138,7 +138,7 @@ UTILIZZO - MODALITA' TESTO (chat scritta)
    "Sono Mario Rossi nato il 05/03/1980
     CF RSSMRA80C05H501Z ho la febbre"
 
-   E' possibile modificare i dati ("cambia il mio nome in...",
+   È possibile modificare i dati ("cambia il mio nome in...",
    "i miei sintomi sono...") o annullare la registrazione
    ("annulla").
 
@@ -148,7 +148,7 @@ UTILIZZO - MODALITA' TESTO (chat scritta)
    - VERDE:     urgenza minore
 
    Logica: 70% peso ai sintomi dichiarati, 30% all'analisi
-   visiva (Teachable Machine). Tre o piu' sintomi dello stesso
+   visiva (Teachable Machine). Tre o più sintomi dello stesso
    livello incrementano automaticamente il codice assegnato.
 
 4. Premere "Salva nel DB" per archiviare i dati del paziente
@@ -189,7 +189,7 @@ UTILIZZO - MODALITA' VOCALE (chatbot vocale)
    per migliorare l'affidabilita' del riconoscimento.
 
 6. Il resto del flusso (analisi facciale, calcolo codice
-   triage, salvataggio nel database) e' identico alla modalita'
+   triage, salvataggio nel database) è identico alla modalità
    testo: i dati raccolti via voce confluiscono nello stesso
    stato condiviso della dashboard.
 

@@ -10,10 +10,22 @@ import globals
 MAX_CAMERA_INDEX = 8
 CAMERA_SCAN_TTL = 10
 DEFAULT_CAMERA_INDEX = 4
+PREFERRED_CAMERA_WIDTH = 1280
+PREFERRED_CAMERA_HEIGHT = 720
 
 _camera_scan_lock = threading.Lock()
 _camera_cache = []
 _camera_cache_time = 0.0
+
+
+def configura_capture(cap):
+    try:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, PREFERRED_CAMERA_WIDTH)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, PREFERRED_CAMERA_HEIGHT)
+        cap.set(cv2.CAP_PROP_FPS, 30)
+    except cv2.error:
+        pass
+    return cap
 
 
 def crea_capture(indice):
@@ -21,11 +33,11 @@ def crea_capture(indice):
         try:
             cap = cv2.VideoCapture(indice, cv2.CAP_DSHOW)
             if cap.isOpened():
-                return cap
+                return configura_capture(cap)
             cap.release()
         except cv2.error:
             pass
-    return cv2.VideoCapture(indice)
+    return configura_capture(cv2.VideoCapture(indice))
 
 
 def indici_camera(indice_preferito=None):
@@ -248,6 +260,7 @@ def camera_worker(model, class_names):
             try:
                 globals.capture_in_progress = True
                 globals.last_capture_error = ""
+                globals.ultimo_dato_dolore['capture_attempted'] = True
 
                 # Forza un controllo immediato sul frame attuale per evitare falsi positivi
                 # causati dalla cache di detect_face (eseguito ogni 5 frame).
@@ -264,8 +277,12 @@ def camera_worker(model, class_names):
                     fy2_c = min(frame.shape[0], endY + buffer_y)
                     face_crop = frame[fy1_c:fy2_c, fx1_c:fx2_c]
                 else:
-                    face_detected = False
-                    face_crop = frame.copy()
+                    globals.ultimo_dato_dolore['face_detected'] = False
+                    globals.ultimo_dato_dolore['pain_level'] = "-"
+                    globals.ultimo_dato_dolore['confidence'] = 0.0
+                    globals.captured_image_bytes = None
+                    print("[AI] Nessun volto rilevato nell'inquadratura.")
+                    continue
 
                 globals.ultimo_dato_dolore['face_detected'] = face_detected
 

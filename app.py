@@ -142,6 +142,7 @@ def acquisisci():
     globals.capture_requested = True
     globals.capture_in_progress = True
     globals.last_capture_error = ""
+    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False, "capture_attempted": False}
     return jsonify({"status": "ok"})
 
 @app.route('/api/camere', methods=['GET'])
@@ -173,7 +174,7 @@ def seleziona_camera():
     globals.last_capture_error = ""
     globals.captured_image_bytes = None
     globals.current_stream_bytes = None
-    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
+    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False, "capture_attempted": False}
     globals.camera_status = f"Apertura camera {indice}..."
     globals.camera_error = ""
     return jsonify({"status": "ok", "index": indice})
@@ -185,7 +186,7 @@ def reset_triage():
     globals.capture_requested = False
     globals.capture_in_progress = False
     globals.last_capture_error = ""
-    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False}
+    globals.ultimo_dato_dolore = {"pain_level": "-", "confidence": 0.0, "face_detected": False, "capture_attempted": False}
     globals.dati_paziente = {"nome": "-", "data_nascita": "-", "sintomi": "-", "livello_dolore": "-", "codice": "-", "codice_fiscale": "-"}
     globals.paziente_salvato = False
     return jsonify({"status": "ok"})
@@ -241,7 +242,7 @@ def salva_paziente():
         return jsonify({
             "status": "ok",
             "codice": codice,
-            "messaggio": "Paziente gia' salvato nel database.",
+            "messaggio": "Paziente già salvato nel database.",
             "salvato": True
         })
 
@@ -265,7 +266,7 @@ def visualizza_pazienti():
 
 # --- EVENTI SOCKETIO PER IL CHATBOT VOCALE ---
 # Il riconoscimento vocale (STT) e la sintesi (TTS) avvengono lato browser
-# tramite Web Speech API. Qui riceviamo solo TESTO gia' trascritto e lo
+# tramite Web Speech API. Qui riceviamo solo TESTO già trascritto e lo
 # inviamo a Dialogflow, restituendo la risposta testuale.
 
 @socketio.on('connect')
@@ -291,7 +292,7 @@ def handle_chat_reset():
 @socketio.on('voice_text')
 def handle_voice_text(data):
     """
-    Riceve il testo gia' trascritto dal browser (Web Speech API),
+    Riceve il testo già trascritto dal browser (Web Speech API),
     lo invia a Dialogflow e restituisce la risposta.
     """
     try:

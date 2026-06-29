@@ -24,7 +24,7 @@ def get_session_id(sid_socket):
 
 
 def invia_testo_a_dialogflow(testo, sid_socket):
-    """Invia una frase di testo (gia' trascritta) a Dialogflow e ottiene la risposta."""
+    """Invia una frase di testo (già trascritta) a Dialogflow e ottiene la risposta."""
     session_id = get_session_id(sid_socket)
     session_client = dialogflow.SessionsClient()
     session_path = session_client.session_path(PROJECT_ID, session_id)
