@@ -51,7 +51,7 @@ Questo file contiene la mappatura dei nuovi sintomi semplificati alle loro varia
 | **frattura** | frattura esposta, osso rotto, frattura ossea, braccio rotto, gamba rotta | Spostato da GRAVI (*frattura esposta*) |
 | **ustione** | ustione grave, bruciatura, ustionato | Spostato da GRAVI (*ustione grave*) |
 | **visione offuscata** | visione confusa improvvisa, vista offuscata, visione doppia, non ci vedo bene | Spostato da GRAVI (*visione confusa improvvisa*) |
-| **tosse con sangue** | emottisi, tosse ematica, espettorato con sangue | |
+| **emottisi** | tosse con sangue, tosse ematica, espettorato con sangue | |
 
 ---
 

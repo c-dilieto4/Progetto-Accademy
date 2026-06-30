@@ -14,7 +14,7 @@ SINTOMI_MEDI = [
     'eruzione cutanea', 'dolore articolare', 'crampi', 'sangue dal naso',
     'difficoltà a urinare', 'sudorazione', 'brividi', 'confusione',
     'emicrania', 'intorpidimento', 'battito irregolare', 'palpitazioni',
-    'frattura', 'ustione', 'visione offuscata', 'tosse con sangue'
+    'frattura', 'ustione', 'visione offuscata', 'emottisi'
 ]
  
 SINTOMI_LIEVI = [
