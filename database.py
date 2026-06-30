@@ -1,4 +1,6 @@
 # database.py
+from datetime import date, datetime
+
 import psycopg2
 
 SINTOMI_GRAVI = [
@@ -82,9 +84,37 @@ DB_CONFIG = {
     'port': '5432'
 }
 
+
+def normalizza_data_nascita(data_nascita):
+    if isinstance(data_nascita, datetime):
+        return data_nascita.date()
+    if isinstance(data_nascita, date):
+        return data_nascita
+
+    testo = str(data_nascita).strip()
+    if not testo or testo == "-":
+        raise ValueError("Data di nascita mancante.")
+
+    testo = testo.replace("Z", "+00:00")
+    for parser in (date.fromisoformat, lambda valore: datetime.fromisoformat(valore).date()):
+        try:
+            return parser(testo)
+        except ValueError:
+            pass
+
+    for formato in ("%d/%m/%Y", "%d-%m-%Y"):
+        try:
+            return datetime.strptime(testo, formato).date()
+        except ValueError:
+            pass
+
+    raise ValueError(f"Data di nascita non valida: {data_nascita}")
+
+
 def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscale, face_detected=True, confidence=100.0):
     codice_assegnato, messaggio_operatore = calcola_triage(sintomi, livello_dolore, face_detected, confidence)
     try:
+        data_nascita_db = normalizza_data_nascita(data_nascita)
         conn = psycopg2.connect(**DB_CONFIG)
         cur = conn.cursor()
         
@@ -92,7 +122,7 @@ def salva_paziente_db(nome, data_nascita, sintomi, livello_dolore, codice_fiscal
             INSERT INTO pazienti_triage (nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale)
             VALUES (%s, %s, %s, %s, %s, %s)
         """
-        cur.execute(query, (nome, data_nascita, sintomi, livello_dolore, codice_assegnato, codice_fiscale))
+        cur.execute(query, (nome, data_nascita_db, sintomi, livello_dolore, codice_assegnato, codice_fiscale))
         conn.commit()
         cur.close()
         conn.close()

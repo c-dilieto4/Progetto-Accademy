@@ -246,12 +246,22 @@
             </thead>
             <tbody id="tbody">
                 {% for p in pazienti %}
+                {% if p[2] and p[2].strftime is defined %}
+                    {% set data_nascita_display = p[2].strftime('%d/%m/%Y') %}
+                    {% set data_nascita_search = p[2].strftime('%d/%m/%Y') ~ ' ' ~ p[2].isoformat() %}
+                {% elif p[2] and 'T' in (p[2] | string) %}
+                    {% set data_nascita_display = (p[2] | string).split('T')[0] %}
+                    {% set data_nascita_search = data_nascita_display %}
+                {% else %}
+                    {% set data_nascita_display = p[2] or '' %}
+                    {% set data_nascita_search = data_nascita_display %}
+                {% endif %}
                 <tr data-codice="{{ p[5] }}"
                     data-nome="{{ p[1] | lower }}"
                     data-sintomi="{{ p[3] | lower }}"
                     data-cf="{{ p[6] | lower if p[6] else '' }}"
                     data-arrivo="{{ p[7].strftime('%d/%m/%Y %H:%M') if p[7] else '' }}"
-                    data-nascita="{% if p[2] and 'T' in p[2] %}{{ p[2].split('T')[0] }}{% else %}{{ p[2] }}{% endif %}">
+                    data-nascita="{{ data_nascita_search }}">
 
                     <td>
                         {% if p[7] %}
@@ -270,10 +280,10 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if p[2] and 'T' in p[2] %}
-                            {{ p[2].split('T')[0] }}
+                        {% if data_nascita_display %}
+                            {{ data_nascita_display }}
                         {% else %}
-                            {{ p[2] }}
+                            <span style="color: var(--ink-400);">&mdash;</span>
                         {% endif %}
                     </td>
                     <td>{{ p[3] }}</td>

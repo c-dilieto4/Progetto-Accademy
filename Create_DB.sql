@@ -3,7 +3,7 @@ DROP TABLE IF EXISTS pazienti_triage;
 CREATE TABLE pazienti_triage (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(100),
-    data_nascita VARCHAR(50),
+    data_nascita DATE,
     sintomi TEXT,
     livello_dolore VARCHAR(50),
     codice_assegnato VARCHAR(20),
