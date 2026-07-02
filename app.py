@@ -265,9 +265,6 @@ def visualizza_pazienti():
 
 
 # --- EVENTI SOCKETIO PER IL CHATBOT VOCALE ---
-# Il riconoscimento vocale (STT) e la sintesi (TTS) avvengono lato browser
-# tramite Web Speech API. Qui riceviamo solo TESTO già trascritto e lo
-# inviamo a Dialogflow, restituendo la risposta testuale.
 
 @socketio.on('connect')
 def handle_connect():
